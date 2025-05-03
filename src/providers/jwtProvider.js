@@ -1,11 +1,9 @@
 import jwt from 'jsonwebtoken'
-import crypto from 'crypto'
-import fs from 'fs'
 
 const generateToken = async (userInfo, secretKey, tokenLife) => {
   try {
     return jwt.sign(userInfo, secretKey, {
-      algorithm: 'RS256',
+      algorithm: 'HS256',
       expiresIn: tokenLife
     })
   } catch (error) {
@@ -20,24 +18,5 @@ const verifyToken = async (token, secretKey) => {
     throw new Error(error)
   }
 }
-
-// const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-//   modulusLength: 2048,
-//   publicKeyEncoding: {
-//     type: 'spki',
-//     format: 'pem'
-//   },
-//   privateKeyEncoding: {
-//     type: 'pkcs8',
-//     format: 'pem'
-//   }
-// })
-
-// // Save to file `.pem`
-// const secretKeyPair = `
-// PRIVATE_KEY="${privateKey.replace(/\n/g, '\\n')}"
-// PUBLIC_KEY="${publicKey.replace(/\n/g, '\\n')}"
-// `
-// fs.appendFileSync('.env', secretKeyPair)
 
 export const jwtProvider = { generateToken, verifyToken }

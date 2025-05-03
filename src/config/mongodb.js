@@ -1,26 +1,28 @@
-import { env } from '~/config/environment'
-import { MongoClient, ServerApiVersion } from 'mongodb'
+import mongoose from 'mongoose'
+import { env } from './environment'
 
-let databaseInstance = null
+const connectString = env.MONGODB_URI
 
-const mongoClientInstance = new MongoClient(env.MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true
+class Database {
+  constructor() {}
+
+  async connect() {
+    try {
+      await mongoose.connect(connectString, {
+        maxPoolSize: 50,
+        dbName: env.DATABASE_NAME
+      })
+    } catch (err) {
+      throw err
+    }
   }
-})
 
-export const CONNECT_DB = async () => {
-  await mongoClientInstance.connect()
-
-  databaseInstance = mongoClientInstance.db(env.DATABASE_NAME)
+  static getInstance() {
+    if (!Database.instance) {
+      Database.instance = new Database()
+    }
+    return Database.instance
+  }
 }
 
-export const GET_DB = () => {
-  if (!databaseInstance) throw new Error('Must connect to database first!')
-  return databaseInstance
-}
-export const CLOSE_DB = async () => {
-  await mongoClientInstance.close()
-}
+export const instanceMongodb = Database.getInstance()

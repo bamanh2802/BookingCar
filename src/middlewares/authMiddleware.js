@@ -25,14 +25,4 @@ const isAuthorized = async (req, res, next) => {
   }
 }
 
-const isAdmin = async (req, res, next) => {
-  try {
-    if (req.jwtDecoded.roles !== 'admin') res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized !!!' })
-
-    next()
-  } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error !!!' })
-  }
-}
-
-export const authMiddleware = { isAuthorized, isAdmin }
+export const authMiddleware = { isAuthorized }
