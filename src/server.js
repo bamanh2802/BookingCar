@@ -1,13 +1,13 @@
 import express from 'express'
-import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb'
 import { env } from '~/config/environment'
-import exitHook from 'async-exit-hook'
+import { instanceMongodb } from '~/config/mongodb'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
 import { API_V1 } from '~/routes/v1'
 import { corsOptions } from './config/cors'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-const START_SERSER = () => {
+
+const START_SERVER = () => {
   const app = express()
   app.use(cors(corsOptions))
   app.use(express.json())
@@ -19,20 +19,17 @@ const START_SERSER = () => {
     // eslint-disable-next-line no-console
     console.log(`3. App listening at http://${env.APP_HOST}:${env.APP_PORT}/`)
   })
-
-  exitHook(() => {
-    CLOSE_DB()
-  })
 }
 
 ;(async () => {
   try {
-    console.log('1. Connecting to MongoDD Cloud Atlas!')
-    await CONNECT_DB()
-    console.log('2. Connected to MongoDD Cloud Atlas!')
-    START_SERSER()
+    console.log('1. Connecting to MongoDB Cloud Atlas!')
+    await instanceMongodb.connect()
+    console.log('2. Connected to MongoDB Cloud Atlas!')
+    START_SERVER()
   } catch (error) {
+    console.error('❌ Failed to start server due to MongoDB connection error:')
     console.error(error)
-    process.exit(0)
+    process.exit(1)
   }
 })()
