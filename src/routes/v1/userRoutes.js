@@ -11,5 +11,7 @@ Router.route('/').get((req, res) => {
 
 Router.route('/register').post(userValidation.register, userController.register)
 Router.route('/login').post(userValidation.login, userController.login)
+Router.route('/logout').delete(userController.logout)
+Router.route('/refresh-token').get(userController.refreshToken)
 
 export const userRoutes = Router
