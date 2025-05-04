@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import "dotenv/config";
 
 export const env = {
   MONGODB_URI: process.env.MONGODB_URI,
@@ -12,4 +12,4 @@ export const env = {
 
   REFRESH_TOKEN_SECRET_KEY: process.env.REFRESH_TOKEN_SECRET_KEY,
   REFRESH_TOKEN_LIFE: process.env.REFRESH_TOKEN_LIFE
-}
+};
