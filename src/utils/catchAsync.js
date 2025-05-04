@@ -6,6 +6,6 @@
 export const catchAsync = (fn) => {
   return (req, res, next) => {
     // Gọi async function và bắt lỗi nếu có, chuyển đến middleware xử lý lỗi
-    fn(req, res, next).catch(next);
-  };
-};
+    fn(req, res, next).catch(next)
+  }
+}

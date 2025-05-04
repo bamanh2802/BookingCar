@@ -1,5 +1,5 @@
-import { userModel } from "~/models/userModel";
-import BaseRepository from "./baseRepository";
+import { userModel } from '~/models/userModel'
+import BaseRepository from './baseRepository'
 
 /**
  * Repository xử lý tương tác với collection User
@@ -7,7 +7,7 @@ import BaseRepository from "./baseRepository";
  */
 class UserRepository extends BaseRepository {
   constructor() {
-    super(userModel);
+    super(userModel)
   }
 
   /**
@@ -18,7 +18,7 @@ class UserRepository extends BaseRepository {
   async findByEmailOrPhone(emailOrPhone) {
     return this.findOne({
       $or: [{ email: emailOrPhone }, { phone: emailOrPhone }]
-    });
+    })
   }
 
   /**
@@ -30,7 +30,7 @@ class UserRepository extends BaseRepository {
   async checkExistingEmailOrPhone(email, phone) {
     return this.findOne({
       $or: [{ email }, { phone }]
-    });
+    })
   }
 
   /**
@@ -42,12 +42,9 @@ class UserRepository extends BaseRepository {
    * @returns {Promise<Object>} Kết quả phân trang
    */
   async findWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit
 
-    const [results, total] = await Promise.all([
-      this.findAll(filter, "", { skip, limit, sort }),
-      this.count(filter)
-    ]);
+    const [results, total] = await Promise.all([this.findAll(filter, '', { skip, limit, sort }), this.count(filter)])
 
     return {
       results,
@@ -57,10 +54,10 @@ class UserRepository extends BaseRepository {
         limit,
         totalPages: Math.ceil(total / limit)
       }
-    };
+    }
   }
 }
 
 // Singleton pattern
-const userRepository = new UserRepository();
-export default userRepository;
+const userRepository = new UserRepository()
+export default userRepository

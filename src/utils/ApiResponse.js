@@ -1,14 +1,14 @@
-import { StatusCodes } from "http-status-codes";
+import { StatusCodes } from 'http-status-codes'
 
 /**
  * Lớp xử lý response API chuẩn hóa
  */
 class ApiResponse {
-  constructor(statusCode, data, message = "") {
-    this.statusCode = statusCode;
-    this.success = statusCode < 400;
-    this.message = message || this._getDefaultMessageForStatusCode(statusCode);
-    this.data = data;
+  constructor(statusCode, data, message = '') {
+    this.statusCode = statusCode
+    this.success = statusCode < 400
+    this.message = message || this._getDefaultMessageForStatusCode(statusCode)
+    this.data = data
   }
 
   /**
@@ -19,25 +19,25 @@ class ApiResponse {
   _getDefaultMessageForStatusCode(statusCode) {
     switch (statusCode) {
       case StatusCodes.OK:
-        return "Thực hiện thành công";
+        return 'Thực hiện thành công'
       case StatusCodes.CREATED:
-        return "Tạo mới thành công";
+        return 'Tạo mới thành công'
       case StatusCodes.ACCEPTED:
-        return "Yêu cầu được chấp nhận";
+        return 'Yêu cầu được chấp nhận'
       case StatusCodes.NO_CONTENT:
-        return "Không có dữ liệu";
+        return 'Không có dữ liệu'
       case StatusCodes.BAD_REQUEST:
-        return "Yêu cầu không hợp lệ";
+        return 'Yêu cầu không hợp lệ'
       case StatusCodes.UNAUTHORIZED:
-        return "Không có quyền truy cập";
+        return 'Không có quyền truy cập'
       case StatusCodes.FORBIDDEN:
-        return "Không được phép truy cập";
+        return 'Không được phép truy cập'
       case StatusCodes.NOT_FOUND:
-        return "Không tìm thấy tài nguyên";
+        return 'Không tìm thấy tài nguyên'
       case StatusCodes.INTERNAL_SERVER_ERROR:
-        return "Lỗi máy chủ nội bộ";
+        return 'Lỗi máy chủ nội bộ'
       default:
-        return "";
+        return ''
     }
   }
 
@@ -47,8 +47,8 @@ class ApiResponse {
    * @param {String} message - Thông báo (tùy chọn)
    * @returns {ApiResponse} ApiResponse instance
    */
-  static success(data, message = "") {
-    return new ApiResponse(StatusCodes.OK, data, message);
+  static success(data, message = '') {
+    return new ApiResponse(StatusCodes.OK, data, message)
   }
 
   /**
@@ -57,8 +57,8 @@ class ApiResponse {
    * @param {String} message - Thông báo (tùy chọn)
    * @returns {ApiResponse} ApiResponse instance
    */
-  static created(data, message = "") {
-    return new ApiResponse(StatusCodes.CREATED, data, message);
+  static created(data, message = '') {
+    return new ApiResponse(StatusCodes.CREATED, data, message)
   }
 
   /**
@@ -68,7 +68,7 @@ class ApiResponse {
    * @returns {ApiResponse} ApiResponse instance
    */
   static badRequest(message, data = null) {
-    return new ApiResponse(StatusCodes.BAD_REQUEST, data, message);
+    return new ApiResponse(StatusCodes.BAD_REQUEST, data, message)
   }
 
   /**
@@ -78,7 +78,7 @@ class ApiResponse {
    * @returns {ApiResponse} ApiResponse instance
    */
   static unauthorized(message, data = null) {
-    return new ApiResponse(StatusCodes.UNAUTHORIZED, data, message);
+    return new ApiResponse(StatusCodes.UNAUTHORIZED, data, message)
   }
 
   /**
@@ -88,7 +88,7 @@ class ApiResponse {
    * @returns {ApiResponse} ApiResponse instance
    */
   static notFound(message, data = null) {
-    return new ApiResponse(StatusCodes.NOT_FOUND, data, message);
+    return new ApiResponse(StatusCodes.NOT_FOUND, data, message)
   }
 
   /**
@@ -98,8 +98,8 @@ class ApiResponse {
    * @returns {ApiResponse} ApiResponse instance
    */
   static serverError(message, data = null) {
-    return new ApiResponse(StatusCodes.INTERNAL_SERVER_ERROR, data, message);
+    return new ApiResponse(StatusCodes.INTERNAL_SERVER_ERROR, data, message)
   }
 }
 
-export default ApiResponse;
+export default ApiResponse

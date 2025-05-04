@@ -1,5 +1,5 @@
-import mongoose, { Schema } from "mongoose";
-import { DOCUMENT_NAMES, PERMISSIONS, USER_ROLES } from "~/constants";
+import mongoose, { Schema } from 'mongoose'
+import { DOCUMENT_NAMES, PERMISSIONS, USER_ROLES } from '~/constants'
 
 const userRoleSchema = new Schema(
   {
@@ -23,6 +23,6 @@ const userRoleSchema = new Schema(
     }
   },
   { timestamps: true }
-);
+)
 
-export const userRole = mongoose.model(DOCUMENT_NAMES.USER_ROLE, userRoleSchema);
+export const userRole = mongoose.model(DOCUMENT_NAMES.USER_ROLE, userRoleSchema)

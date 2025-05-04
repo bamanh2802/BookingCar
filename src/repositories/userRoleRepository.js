@@ -1,5 +1,5 @@
-import { userRole } from "~/models/userRoleModel";
-import BaseRepository from "./baseRepository";
+import { userRole } from '~/models/userRoleModel'
+import BaseRepository from './baseRepository'
 
 /**
  * Repository xử lý tương tác với collection UserRole
@@ -7,7 +7,7 @@ import BaseRepository from "./baseRepository";
  */
 class UserRoleRepository extends BaseRepository {
   constructor() {
-    super(userRole);
+    super(userRole)
   }
 
   /**
@@ -16,7 +16,7 @@ class UserRoleRepository extends BaseRepository {
    * @returns {Promise<Object>} UserRole document
    */
   async findByRoleName(roleName) {
-    return this.findOne({ roleName });
+    return this.findOne({ roleName })
   }
 
   /**
@@ -26,7 +26,7 @@ class UserRoleRepository extends BaseRepository {
    * @returns {Promise<Object>} Vai trò đã cập nhật
    */
   async updatePermissions(roleId, permissions) {
-    return this.updateById(roleId, { permissions });
+    return this.updateById(roleId, { permissions })
   }
 
   /**
@@ -36,7 +36,7 @@ class UserRoleRepository extends BaseRepository {
    * @returns {Promise<Object>} Vai trò đã cập nhật
    */
   async updateInherits(roleId, inherits) {
-    return this.updateById(roleId, { inherits });
+    return this.updateById(roleId, { inherits })
   }
 
   /**
@@ -44,7 +44,7 @@ class UserRoleRepository extends BaseRepository {
    * @returns {Promise<Array>} Danh sách vai trò
    */
   async findAllWithDetails() {
-    return this.model.find().populate("inherits").lean();
+    return this.model.find().populate('inherits').lean()
   }
 
   /**
@@ -53,11 +53,11 @@ class UserRoleRepository extends BaseRepository {
    * @returns {Promise<Boolean>} Kết quả kiểm tra
    */
   async checkRoleExists(roleName) {
-    const count = await this.count({ roleName });
-    return count > 0;
+    const count = await this.count({ roleName })
+    return count > 0
   }
 }
 
 // Singleton pattern
-const userRoleRepository = new UserRoleRepository();
-export default userRoleRepository;
+const userRoleRepository = new UserRoleRepository()
+export default userRoleRepository

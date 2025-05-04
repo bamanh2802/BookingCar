@@ -1,6 +1,6 @@
-import { DEFAULT_ROLE_PERMISSIONS, USER_ROLES } from "~/constants";
-import userRoleRepository from "~/repositories/userRoleRepository";
-import { ConflictError, NotFoundError } from "~/utils/errors";
+import { DEFAULT_ROLE_PERMISSIONS, USER_ROLES } from '~/constants'
+import userRoleRepository from '~/repositories/userRoleRepository'
+import { ConflictError, NotFoundError } from '~/utils/errors'
 
 /**
  * Tạo vai trò mới
@@ -9,18 +9,14 @@ import { ConflictError, NotFoundError } from "~/utils/errors";
  */
 const createRole = async (roleData) => {
   // Kiểm tra tên vai trò đã tồn tại chưa
-  const existingRole = await userRoleRepository.findByRoleName(
-    roleData.roleName
-  );
+  const existingRole = await userRoleRepository.findByRoleName(roleData.roleName)
   if (existingRole) {
-    throw new ConflictError(
-      `Role with name ${roleData.roleName} already exists`
-    );
+    throw new ConflictError(`Role with name ${roleData.roleName} already exists`)
   }
 
   // Tạo vai trò mới
-  return userRoleRepository.create(roleData);
-};
+  return userRoleRepository.create(roleData)
+}
 
 /**
  * Lấy thông tin vai trò theo ID
@@ -28,20 +24,20 @@ const createRole = async (roleData) => {
  * @returns {Promise<Object>} Thông tin vai trò
  */
 const getRoleById = async (roleId) => {
-  const role = await userRoleRepository.findById(roleId);
+  const role = await userRoleRepository.findById(roleId)
   if (!role) {
-    throw new NotFoundError("Role not found");
+    throw new NotFoundError('Role not found')
   }
-  return role;
-};
+  return role
+}
 
 /**
  * Lấy tất cả vai trò
  * @returns {Promise<Array>} Danh sách vai trò
  */
 const getAllRoles = async () => {
-  return userRoleRepository.findAllWithDetails();
-};
+  return userRoleRepository.findAllWithDetails()
+}
 
 /**
  * Cập nhật thông tin vai trò
@@ -50,25 +46,21 @@ const getAllRoles = async () => {
  * @returns {Promise<Object>} Vai trò đã cập nhật
  */
 const updateRole = async (roleId, updateData) => {
-  const role = await userRoleRepository.findById(roleId);
+  const role = await userRoleRepository.findById(roleId)
   if (!role) {
-    throw new NotFoundError("Role not found");
+    throw new NotFoundError('Role not found')
   }
 
   // Kiểm tra nếu đổi tên vai trò
   if (updateData.roleName && updateData.roleName !== role.roleName) {
-    const existingRole = await userRoleRepository.findByRoleName(
-      updateData.roleName
-    );
+    const existingRole = await userRoleRepository.findByRoleName(updateData.roleName)
     if (existingRole && existingRole._id.toString() !== roleId) {
-      throw new ConflictError(
-        `Role with name ${updateData.roleName} already exists`
-      );
+      throw new ConflictError(`Role with name ${updateData.roleName} already exists`)
     }
   }
 
-  return userRoleRepository.updateById(roleId, updateData);
-};
+  return userRoleRepository.updateById(roleId, updateData)
+}
 
 /**
  * Cập nhật quyền cho vai trò
@@ -77,13 +69,13 @@ const updateRole = async (roleId, updateData) => {
  * @returns {Promise<Object>} Vai trò đã cập nhật
  */
 const updateRolePermissions = async (roleId, permissions) => {
-  const role = await userRoleRepository.findById(roleId);
+  const role = await userRoleRepository.findById(roleId)
   if (!role) {
-    throw new NotFoundError("Role not found");
+    throw new NotFoundError('Role not found')
   }
 
-  return userRoleRepository.updatePermissions(roleId, permissions);
-};
+  return userRoleRepository.updatePermissions(roleId, permissions)
+}
 
 /**
  * Cập nhật vai trò kế thừa
@@ -92,21 +84,21 @@ const updateRolePermissions = async (roleId, permissions) => {
  * @returns {Promise<Object>} Vai trò đã cập nhật
  */
 const updateRoleInherits = async (roleId, inherits) => {
-  const role = await userRoleRepository.findById(roleId);
+  const role = await userRoleRepository.findById(roleId)
   if (!role) {
-    throw new NotFoundError("Role not found");
+    throw new NotFoundError('Role not found')
   }
 
   // Kiểm tra các vai trò kế thừa có tồn tại không
   for (const inheritId of inherits) {
-    const inheritRole = await userRoleRepository.findById(inheritId);
+    const inheritRole = await userRoleRepository.findById(inheritId)
     if (!inheritRole) {
-      throw new NotFoundError(`Inherit role with ID ${inheritId} not found`);
+      throw new NotFoundError(`Inherit role with ID ${inheritId} not found`)
     }
   }
 
-  return userRoleRepository.updateInherits(roleId, inherits);
-};
+  return userRoleRepository.updateInherits(roleId, inherits)
+}
 
 /**
  * Xóa vai trò
@@ -114,40 +106,40 @@ const updateRoleInherits = async (roleId, inherits) => {
  * @returns {Promise<Boolean>} Kết quả xóa
  */
 const deleteRole = async (roleId) => {
-  const role = await userRoleRepository.findById(roleId);
+  const role = await userRoleRepository.findById(roleId)
   if (!role) {
-    throw new NotFoundError("Role not found");
+    throw new NotFoundError('Role not found')
   }
 
   // Kiểm tra có phải vai trò mặc định không
   if (Object.values(USER_ROLES).includes(role.roleName)) {
-    throw new ConflictError("Cannot delete default role");
+    throw new ConflictError('Cannot delete default role')
   }
 
-  return userRoleRepository.deleteById(roleId);
-};
+  return userRoleRepository.deleteById(roleId)
+}
 
 /**
  * Tạo các vai trò mặc định
  * @returns {Promise<Array>} Danh sách vai trò đã tạo
  */
 const createDefaultRoles = async () => {
-  const defaultRoles = [];
+  const defaultRoles = []
 
   // Tạo vai trò mặc định nếu chưa tồn tại
   for (const roleName of Object.values(USER_ROLES)) {
-    const existingRole = await userRoleRepository.findByRoleName(roleName);
+    const existingRole = await userRoleRepository.findByRoleName(roleName)
     if (!existingRole) {
       const newRole = await userRoleRepository.create({
         roleName,
-        permissions: DEFAULT_ROLE_PERMISSIONS[roleName] || [],
-      });
-      defaultRoles.push(newRole);
+        permissions: DEFAULT_ROLE_PERMISSIONS[roleName] || []
+      })
+      defaultRoles.push(newRole)
     }
   }
 
-  return defaultRoles;
-};
+  return defaultRoles
+}
 
 /**
  * Lấy danh sách quyền của vai trò
@@ -158,41 +150,39 @@ const getRolePermissions = async (roleId) => {
   if (!roleId) {
     // Nếu không có roleId, trả về tất cả các quyền có sẵn
     return {
-      availablePermissions: Object.values(DEFAULT_ROLE_PERMISSIONS).flat(),
-    };
+      availablePermissions: Object.values(DEFAULT_ROLE_PERMISSIONS).flat()
+    }
   }
 
-  const role = await userRoleRepository.findById(roleId);
+  const role = await userRoleRepository.findById(roleId)
   if (!role) {
-    throw new NotFoundError("Role not found");
+    throw new NotFoundError('Role not found')
   }
 
   // Danh sách quyền của vai trò
-  let permissions = [...role.permissions];
+  let permissions = [...role.permissions]
 
   // Nếu vai trò có kế thừa, thêm quyền từ các vai trò được kế thừa
   if (role.inherits && role.inherits.length > 0) {
     // Lấy thông tin chi tiết các vai trò kế thừa
-    const inheritRoles = await Promise.all(
-      role.inherits.map((id) => userRoleRepository.findById(id))
-    );
+    const inheritRoles = await Promise.all(role.inherits.map((id) => userRoleRepository.findById(id)))
 
     // Thêm quyền từ vai trò kế thừa
     inheritRoles.forEach((inheritRole) => {
       if (inheritRole && inheritRole.permissions) {
-        permissions = [...permissions, ...inheritRole.permissions];
+        permissions = [...permissions, ...inheritRole.permissions]
       }
-    });
+    })
   }
 
   // Loại bỏ các quyền trùng lặp
-  permissions = [...new Set(permissions)];
+  permissions = [...new Set(permissions)]
 
   return {
     name: role.roleName,
-    permissions: permissions,
-  };
-};
+    permissions: permissions
+  }
+}
 
 export const userRoleService = {
   createRole,
@@ -203,5 +193,5 @@ export const userRoleService = {
   updateRoleInherits,
   deleteRole,
   createDefaultRoles,
-  getRolePermissions,
-};
+  getRolePermissions
+}

@@ -13,7 +13,6 @@ Mô hình dữ liệu User đại diện cho người dùng trong hệ thống.
 | phone         | String   | Số điện thoại (duy nhất)            |
 | roleId        | ObjectId | ID của vai trò người dùng           |
 | parentId      | ObjectId | ID của người tạo ra người dùng này  |
-| createdBy     | ObjectId | ID của người tạo tài khoản          |
 | bankAccountId | ObjectId | ID của tài khoản ngân hàng (nếu có) |
 | createdAt     | Date     | Thời gian tạo                       |
 | updatedAt     | Date     | Thời gian cập nhật gần nhất         |

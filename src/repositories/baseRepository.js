@@ -7,7 +7,7 @@ class BaseRepository {
    * @param {mongoose.Model} model - Mongoose model
    */
   constructor(model) {
-    this.model = model;
+    this.model = model
   }
 
   /**
@@ -17,8 +17,8 @@ class BaseRepository {
    * @param {Object} options - Query options (sort, pagination, etc.)
    * @returns {Promise<Array>} Documents array
    */
-  async findAll(filter = {}, projection = "", options = {}) {
-    return this.model.find(filter, projection, options);
+  async findAll(filter = {}, projection = '', options = {}) {
+    return this.model.find(filter, projection, options)
   }
 
   /**
@@ -27,8 +27,8 @@ class BaseRepository {
    * @param {String} projection - Fields to include/exclude
    * @returns {Promise<Object>} Document
    */
-  async findById(id, projection = "") {
-    return this.model.findById(id, projection);
+  async findById(id, projection = '') {
+    return this.model.findById(id, projection)
   }
 
   /**
@@ -38,8 +38,8 @@ class BaseRepository {
    * @param {Object} options - Query options
    * @returns {Promise<Object>} Document
    */
-  async findOne(filter, projection = "", options = {}) {
-    return this.model.findOne(filter, projection, options);
+  async findOne(filter, projection = '', options = {}) {
+    return this.model.findOne(filter, projection, options)
   }
 
   /**
@@ -48,7 +48,7 @@ class BaseRepository {
    * @returns {Promise<Object>} Created document
    */
   async create(data) {
-    return this.model.create(data);
+    return this.model.create(data)
   }
 
   /**
@@ -59,7 +59,7 @@ class BaseRepository {
    * @returns {Promise<Object>} Updated document
    */
   async updateById(id, data, options = { new: true }) {
-    return this.model.findByIdAndUpdate(id, data, options);
+    return this.model.findByIdAndUpdate(id, data, options)
   }
 
   /**
@@ -69,7 +69,7 @@ class BaseRepository {
    * @returns {Promise<Object>} Update result
    */
   async updateMany(filter, data) {
-    return this.model.updateMany(filter, data);
+    return this.model.updateMany(filter, data)
   }
 
   /**
@@ -78,7 +78,7 @@ class BaseRepository {
    * @returns {Promise<Object>} Deleted document
    */
   async deleteById(id) {
-    return this.model.findByIdAndDelete(id);
+    return this.model.findByIdAndDelete(id)
   }
 
   /**
@@ -87,7 +87,7 @@ class BaseRepository {
    * @returns {Promise<Object>} Delete result
    */
   async deleteMany(filter) {
-    return this.model.deleteMany(filter);
+    return this.model.deleteMany(filter)
   }
 
   /**
@@ -96,7 +96,7 @@ class BaseRepository {
    * @returns {Promise<Number>} Count
    */
   async count(filter = {}) {
-    return this.model.countDocuments(filter);
+    return this.model.countDocuments(filter)
   }
 
   /**
@@ -105,8 +105,8 @@ class BaseRepository {
    * @returns {Promise<Boolean>} True if exists
    */
   async exists(filter) {
-    return this.model.exists(filter);
+    return this.model.exists(filter)
   }
 }
 
-export default BaseRepository;
+export default BaseRepository

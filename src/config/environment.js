@@ -1,4 +1,4 @@
-import "dotenv/config";
+import 'dotenv/config'
 
 export const env = {
   MONGODB_URI: process.env.MONGODB_URI,
@@ -16,5 +16,5 @@ export const env = {
   // Thông tin admin mặc định
   DEFAULT_ADMIN_EMAIL: process.env.DEFAULT_ADMIN_EMAIL,
   DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD,
-  DEFAULT_ADMIN_PHONE: process.env.DEFAULT_ADMIN_PHONE,
-};
+  DEFAULT_ADMIN_PHONE: process.env.DEFAULT_ADMIN_PHONE
+}
