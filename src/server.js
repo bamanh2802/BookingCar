@@ -7,6 +7,7 @@ import { env } from "~/config/environment";
 import { instanceMongodb } from "~/config/mongodb";
 import { errorHandlingMiddleware } from "~/middlewares/errorHandlingMiddleware";
 import { API_V1 } from "~/routes/v1";
+import { initializeRolesAndAdmin } from "~/scripts/initRoles";
 import logger from "~/utils/logger";
 import { corsOptions } from "./config/cors";
 
@@ -34,7 +35,7 @@ const createApp = () => {
     max: 1000, // Giới hạn mỗi IP 1000 requests mỗi 5 phút
     standardHeaders: true, // Trả về thông tin rate limit trong header `RateLimit-*`
     legacyHeaders: false, // Disable các header `X-RateLimit-*`
-    message: "Quá nhiều request từ IP này, vui lòng thử lại sau 5 phút"
+    message: "Quá nhiều request từ IP này, vui lòng thử lại sau 5 phút",
   });
 
   // Áp dụng rate limiting cho tất cả các route API
@@ -59,6 +60,11 @@ const START_SERVER = async () => {
     await instanceMongodb.connect();
     logger.info("Connected to MongoDB Cloud Atlas successfully!");
 
+    // Khởi tạo vai trò và tài khoản admin nếu chưa tồn tại
+    logger.info("Initializing roles and admin account...");
+    await initializeRolesAndAdmin();
+    logger.info("Roles and admin initialization completed");
+
     // Tạo express app
     const app = createApp();
 
@@ -70,7 +76,7 @@ const START_SERVER = async () => {
     // Xử lý unhandled rejection
     setupErrorHandlers();
   } catch (error) {
-    logger.error("Failed to start server due to MongoDB connection error:", error);
+    logger.error("Failed to start server:", error);
     process.exit(1);
   }
 };

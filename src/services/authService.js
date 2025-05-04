@@ -1,6 +1,7 @@
 import { env } from "~/config/environment";
 import { jwtProvider } from "~/providers/jwtProvider";
 import userRepository from "~/repositories/userRepository";
+import userRoleRepository from "~/repositories/userRoleRepository";
 import { AuthenticationError, NotFoundError } from "~/utils/errors";
 import { pickUser } from "~/utils/formatter";
 
@@ -24,11 +25,18 @@ const login = async (credentials) => {
     throw new AuthenticationError("Wrong password!");
   }
 
+  // Lấy thông tin vai trò
+  const userRole = user.roleId
+    ? await userRoleRepository.findById(user.roleId)
+    : null;
+
   // Tạo thông tin người dùng cho token
   const userInfo = {
     _id: user._id,
     email: user.email,
-    phone: user.phone
+    phone: user.phone,
+    roleId: user.roleId,
+    roleName: userRole ? userRole.roleName : null,
   };
 
   // Tạo access token và refresh token
@@ -38,7 +46,8 @@ const login = async (credentials) => {
   return {
     accessToken,
     refreshToken,
-    ...pickUser(user)
+    ...pickUser(user),
+    roleName: userRole ? userRole.roleName : null,
   };
 };
 
@@ -48,7 +57,11 @@ const login = async (credentials) => {
  * @returns {string} JWT access token
  */
 const generateAccessToken = (userInfo) => {
-  return jwtProvider.generateToken(userInfo, env.ACCESS_TOKEN_SECRET_KEY, env.ACCESS_TOKEN_LIFE);
+  return jwtProvider.generateToken(
+    userInfo,
+    env.ACCESS_TOKEN_SECRET_KEY,
+    env.ACCESS_TOKEN_LIFE
+  );
 };
 
 /**
@@ -57,7 +70,11 @@ const generateAccessToken = (userInfo) => {
  * @returns {string} JWT refresh token
  */
 const generateRefreshToken = (userInfo) => {
-  return jwtProvider.generateToken(userInfo, env.REFRESH_TOKEN_SECRET_KEY, env.REFRESH_TOKEN_LIFE);
+  return jwtProvider.generateToken(
+    userInfo,
+    env.REFRESH_TOKEN_SECRET_KEY,
+    env.REFRESH_TOKEN_LIFE
+  );
 };
 
 /**
@@ -68,7 +85,10 @@ const generateRefreshToken = (userInfo) => {
 const refreshToken = async (refreshToken) => {
   try {
     // Verify refresh token
-    const decoded = await jwtProvider.verifyToken(refreshToken, env.REFRESH_TOKEN_SECRET_KEY);
+    const decoded = await jwtProvider.verifyToken(
+      refreshToken,
+      env.REFRESH_TOKEN_SECRET_KEY
+    );
 
     // Tìm người dùng trong database
     const user = await userRepository.findById(decoded._id);
@@ -76,11 +96,18 @@ const refreshToken = async (refreshToken) => {
       throw new AuthenticationError("User not found or token invalid");
     }
 
+    // Lấy thông tin vai trò
+    const userRole = user.roleId
+      ? await userRoleRepository.findById(user.roleId)
+      : null;
+
     // Tạo thông tin người dùng cho token mới
     const userInfo = {
       _id: user._id,
       email: user.email,
-      phone: user.phone
+      phone: user.phone,
+      roleId: user.roleId,
+      roleName: userRole ? userRole.roleName : null,
     };
 
     // Tạo access token mới
@@ -96,5 +123,5 @@ export const authService = {
   login,
   refreshToken,
   generateAccessToken,
-  generateRefreshToken
+  generateRefreshToken,
 };

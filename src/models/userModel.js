@@ -9,15 +9,15 @@ const userSchema = new Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
     },
     password: {
       type: String,
       required: [true, "Password is required"],
       minLength: [
         VALIDATION_RULES.PASSWORD_MIN_LENGTH,
-        `Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`
-      ]
+        `Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`,
+      ],
     },
     fullName: {
       type: String,
@@ -25,38 +25,54 @@ const userSchema = new Schema(
       trim: true,
       maxlength: [
         VALIDATION_RULES.FULLNAME_MAX_LENGTH,
-        `Full name cannot exceed ${VALIDATION_RULES.FULLNAME_MAX_LENGTH} characters`
+        `Full name cannot exceed ${VALIDATION_RULES.FULLNAME_MAX_LENGTH} characters`,
       ],
       minLength: [
         VALIDATION_RULES.FULLNAME_MIN_LENGTH,
-        `Fullname must be at least ${VALIDATION_RULES.FULLNAME_MIN_LENGTH} characters long`
-      ]
+        `Fullname must be at least ${VALIDATION_RULES.FULLNAME_MIN_LENGTH} characters long`,
+      ],
     },
     phone: {
       type: String,
       required: [true, "Phone number is required"],
       unique: true,
       trim: true,
-      match: [VALIDATION_RULES.PHONE_NUMBER_RULE, "Invalid phone number format"]
+      match: [
+        VALIDATION_RULES.PHONE_NUMBER_RULE,
+        "Invalid phone number format",
+      ],
     },
-    // roleId: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'UserRole',
-    //   required: [true, 'Role ID is required']
-    // },
+    roleId: {
+      type: Schema.Types.ObjectId,
+      ref: DOCUMENT_NAMES.USER_ROLE,
+      required: [true, "Role ID is required"],
+    },
+    /**
+     * parentId: Lưu trữ ID của người dùng đã tạo ra người dùng này.
+     * Phục vụ cho hệ thống phân cấp trong app:
+     * - Admin có thể tạo tất cả các loại tài khoản
+     * - Đại lý cấp 1 có thể tạo Đại lý cấp 2 và Người dùng
+     * - Đại lý cấp 2 chỉ có thể tạo Người dùng
+     * Thuộc tính này cho phép truy vết "ai tạo ra ai" và hỗ trợ chức năng quản lý user theo cấp bậc
+     */
+    parentId: {
+      type: Schema.Types.ObjectId,
+      ref: DOCUMENT_NAMES.USER,
+      default: null,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.USER,
-      default: null
+      default: null,
     },
     bankAccountId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.BANK_ACCOUNT,
-      default: null
-    }
+      default: null,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
