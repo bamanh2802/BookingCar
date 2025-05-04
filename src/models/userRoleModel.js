@@ -1,6 +1,5 @@
-import mongoose, { Schema } from 'mongoose'
-import { USER_ROLES } from '~/utils/constants'
-const USER_ROLES_DOCUMENT_NAME = 'UserRole'
+import mongoose, { Schema } from "mongoose";
+import { DOCUMENT_NAMES, PERMISSIONS, USER_ROLES } from "~/constants";
 
 const userRoleSchema = new Schema(
   {
@@ -14,32 +13,16 @@ const userRoleSchema = new Schema(
     },
     inherits: {
       type: [Schema.Types.ObjectId],
-      ref: USER_ROLES_DOCUMENT_NAME,
+      ref: DOCUMENT_NAMES.USER_ROLE,
       default: []
     },
     permissions: {
       type: [String],
       default: [],
-      enum: [
-        'manage_users',
-        'manage_routes',
-        'manage_tickets',
-        'manage_refunds',
-        'manage_reviews',
-        'manage_reports',
-        'view_tickets_users',
-        'view_reports_users',
-        'view_tickets_agents_lv2',
-        'view_reports_agents_lv2',
-        'manage_agents_lv2',
-        'book_tickets',
-        'view_history',
-        'submit_reviews',
-        'request_refunds'
-      ]
+      enum: Object.values(PERMISSIONS)
     }
   },
   { timestamps: true }
-)
+);
 
-export const userRole = mongoose.model(USER_ROLES_DOCUMENT_NAME, userRoleSchema)
+export const userRole = mongoose.model(DOCUMENT_NAMES.USER_ROLE, userRoleSchema);
