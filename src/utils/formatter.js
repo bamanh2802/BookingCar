@@ -1,6 +1,6 @@
-import { pick } from 'lodash'
+import { pick } from "lodash";
 
 export const pickUser = (user) => {
-  if (!user) return {}
-  return pick(user, ['_id', 'email', 'fullName', 'phone', 'createdAt', 'updatedAt'])
-}
+  if (!user) return {};
+  return pick(user, ["_id", "email", "fullName", "phone", "createdAt", "updatedAt"]);
+};
