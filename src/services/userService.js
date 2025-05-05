@@ -1,56 +1,155 @@
-import { StatusCodes } from 'http-status-codes'
-import { env } from '~/config/environment'
-import { userModel } from '~/models/userModel'
-import { jwtProvider } from '~/providers/jwtProvider'
-import ApiError from '~/utils/ApiError'
+import { USER_ROLES } from '~/constants'
+import userRepository from '~/repositories/userRepository'
+import userRoleRepository from '~/repositories/userRoleRepository'
+import { ConflictError, NotFoundError } from '~/utils/errors'
 import { pickUser } from '~/utils/formatter'
 
-const register = async (reqBody) => {
-  try {
-    const existedUser = await userModel.findOne({ $or: [{ email: reqBody.email }, { phone: reqBody.phone }] })
+/**
+ * Đăng ký người dùng mới
+ * @param {Object} userData - Thông tin người dùng đăng ký
+ * @param {String} creatorId - ID của người tạo tài khoản (nếu có)
+ * @returns {Object} Thông tin người dùng đã đăng ký
+ */
+const register = async (userData, creatorId = null) => {
+  // Kiểm tra người dùng đã tồn tại chưa
+  const existedUser = await userRepository.checkExistingEmailOrPhone(userData.email, userData.phone)
 
-    if (existedUser) throw new ApiError(StatusCodes.CONFLICT, 'Phone number or email already exists!!')
-
-    // const clientRole = await UserRole.findOne({ roleName: 'Client' })
-    // if (!clientRole) {
-    //   throw new Error('Client role not found. Please initialize UserRole data first.')
-    // }
-
-    const user = await userModel.create({
-      email: reqBody.email,
-      password: reqBody.password,
-      fullName: reqBody.fullName,
-      phone: reqBody.phone
-    })
-
-    await user.save()
-
-    return pickUser(user)
-  } catch (error) {
-    throw error
+  if (existedUser) {
+    throw new ConflictError(
+      'Phone number or email already exists!!',
+      existedUser.email === userData.email ? 'email' : 'phone'
+    )
   }
-}
 
-const login = async (reqBody) => {
-  try {
-    const user = await userModel.findOne({ $or: [{ email: reqBody.email }, { phone: reqBody.phone }] })
-    if (!user) throw new ApiError(StatusCodes.NOT_FOUND, 'Email or Phone number not found !')
-
-    const isMatchPassword = await user.comparePassword(reqBody.password)
-    if (!isMatchPassword) throw new ApiError(StatusCodes.BAD_GATEWAY, 'Wrong password !')
-    const userInfo = {
-      _id: user._id,
-      email: user.email,
-      phone: user.phone
+  // Xử lý roleId
+  if (userData.roleId) {
+    // Nếu roleId được chỉ định, kiểm tra xem nó có tồn tại không
+    const roleExists = await userRoleRepository.findById(userData.roleId)
+    if (!roleExists) {
+      throw new NotFoundError(`Role with ID ${userData.roleId} not found`)
     }
-
-    const accessToken = await jwtProvider.generateToken(userInfo, env.ACCESS_TOKEN_SECRET_KEY, env.ACCESS_TOKEN_LIFE)
-    const refreshToken = await jwtProvider.generateToken(userInfo, env.REFRESH_TOKEN_SECRET_KEY, env.REFRESH_TOKEN_LIFE)
-
-    return { accessToken, refreshToken, ...pickUser(user) }
-  } catch (error) {
-    throw error
+  } else {
+    // Nếu không có roleId, sử dụng vai trò Client làm mặc định
+    const clientRole = await userRoleRepository.findByRoleName(USER_ROLES.CLIENT)
+    if (!clientRole) {
+      throw new Error('Default client role not found. Please initialize roles first.')
+    }
+    userData.roleId = clientRole._id
   }
+
+  // Tạo người dùng mới
+  const user = await userRepository.create({
+    email: userData.email,
+    password: userData.password,
+    fullName: userData.fullName,
+    phone: userData.phone,
+    roleId: userData.roleId,
+    parentId: creatorId // Người tạo tài khoản (nếu có)
+  })
+
+  return pickUser(user)
 }
 
-export const userService = { register, login }
+/**
+ * Cập nhật thông tin người dùng
+ * @param {string} userId - ID của người dùng
+ * @param {Object} updateData - Dữ liệu cập nhật
+ * @returns {Object} Thông tin người dùng đã cập nhật
+ */
+const updateUser = async (userId, updateData) => {
+  const user = await userRepository.findById(userId)
+  if (!user) {
+    throw new NotFoundError('User not found')
+  }
+
+  // Không cho phép cập nhật email và phone qua API này
+  delete updateData.email
+  delete updateData.phone
+  delete updateData.password
+
+  // Cập nhật thông tin người dùng
+  const updatedUser = await userRepository.updateById(userId, updateData)
+  return pickUser(updatedUser)
+}
+
+/**
+ * Lấy thông tin người dùng theo ID
+ * @param {string} userId - ID của người dùng
+ * @returns {Object} Thông tin người dùng
+ */
+const getUserById = async (userId) => {
+  const user = await userRepository.findById(userId)
+  if (!user) {
+    throw new NotFoundError('User not found')
+  }
+  return pickUser(user)
+}
+
+/**
+ * Lấy danh sách người dùng với phân trang
+ * @param {Object} filter - Điều kiện lọc
+ * @param {Number} page - Trang hiện tại
+ * @param {Number} limit - Số lượng items mỗi trang
+ * @returns {Object} Kết quả phân trang
+ */
+const getUsers = async (filter = {}, page = 1, limit = 10) => {
+  const result = await userRepository.findWithPagination(filter, page, limit)
+
+  // Loại bỏ thông tin nhạy cảm
+  result.results = result.results.map((user) => pickUser(user))
+
+  return result
+}
+
+/**
+ * Tạo người dùng mới bởi Admin hoặc Đại lý
+ * @param {Object} userData - Thông tin người dùng
+ * @param {String} creatorId - ID của người tạo
+ * @returns {Object} Thông tin người dùng đã tạo
+ */
+const createUser = async (userData, creatorId) => {
+  if (!creatorId) {
+    throw new Error('Creator ID is required')
+  }
+
+  // Kiểm tra người dùng đã tồn tại chưa
+  const existedUser = await userRepository.checkExistingEmailOrPhone(userData.email, userData.phone)
+
+  if (existedUser) {
+    throw new ConflictError(
+      'Phone number or email already exists!!',
+      existedUser.email === userData.email ? 'email' : 'phone'
+    )
+  }
+
+  // Kiểm tra vai trò tồn tại nếu được cung cấp
+  if (userData.roleId) {
+    const roleExists = await userRoleRepository.findById(userData.roleId)
+    if (!roleExists) {
+      throw new NotFoundError(`Role with ID ${userData.roleId} not found`)
+    }
+  } else {
+    // Nếu không có roleId, lấy vai trò Client làm mặc định
+    const clientRole = await userRoleRepository.findByRoleName(USER_ROLES.CLIENT)
+    if (!clientRole) {
+      throw new Error('Default client role not found. Please initialize roles first.')
+    }
+    userData.roleId = clientRole._id
+  }
+
+  // Tạo người dùng mới với thông tin người tạo
+  const user = await userRepository.create({
+    ...userData,
+    parentId: creatorId
+  })
+
+  return pickUser(user)
+}
+
+export const userService = {
+  register,
+  updateUser,
+  getUserById,
+  getUsers,
+  createUser
+}

@@ -1,9 +1,11 @@
-import { WHITELIST_DOMAINS } from '~/utils/constants'
-import { env } from '~/config/environment'
 import { StatusCodes } from 'http-status-codes'
-import ApiError from '~/utils/ApiError'
+import { env } from '~/config/environment'
+import { ApiError } from '~/utils/errors'
 
 // Cấu hình CORS Option trong dự án thực tế
+// Danh sách các domain được chấp nhận CORS
+const WHITELIST_DOMAINS = ['http://localhost:5173', 'http://localhost:3000']
+
 //config dynamic cors
 export const corsOptions = {
   origin: function (origin, callback) {

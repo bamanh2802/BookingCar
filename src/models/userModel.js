@@ -1,8 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
 import brcypt from 'bcrypt'
-import { PHONE_NUMBER_RULE } from '~/utils/validators'
-
-const USER_DOCUMENT_NAME = 'User'
+import mongoose, { Schema } from 'mongoose'
+import { DOCUMENT_NAMES, VALIDATION_RULES } from '~/constants'
 
 const userSchema = new Schema(
   {
@@ -16,35 +14,52 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minLength: [8, 'Password must be at least 8 characters long']
+      minLength: [
+        VALIDATION_RULES.PASSWORD_MIN_LENGTH,
+        `Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters long`
+      ]
     },
     fullName: {
       type: String,
       required: [true, 'Fullname is required'],
       trim: true,
-      maxlength: [100, 'Full name cannot exceed 100 characters'],
-      minLength: [2, 'Fullname must be at least 2 characters long']
+      maxlength: [
+        VALIDATION_RULES.FULLNAME_MAX_LENGTH,
+        `Full name cannot exceed ${VALIDATION_RULES.FULLNAME_MAX_LENGTH} characters`
+      ],
+      minLength: [
+        VALIDATION_RULES.FULLNAME_MIN_LENGTH,
+        `Fullname must be at least ${VALIDATION_RULES.FULLNAME_MIN_LENGTH} characters long`
+      ]
     },
     phone: {
       type: String,
       required: [true, 'Phone number is required'],
       unique: true,
       trim: true,
-      match: [PHONE_NUMBER_RULE, 'Invalid phone number format']
+      match: [VALIDATION_RULES.PHONE_NUMBER_RULE, 'Invalid phone number format']
     },
-    // roleId: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'UserRole',
-    //   required: [true, 'Role ID is required']
-    // },
-    createdBy: {
+    roleId: {
       type: Schema.Types.ObjectId,
-      ref: USER_DOCUMENT_NAME,
+      ref: DOCUMENT_NAMES.USER_ROLE,
+      required: [true, 'Role ID is required']
+    },
+    /**
+     * parentId: Lưu trữ ID của người dùng đã tạo ra người dùng này.
+     * Phục vụ cho hệ thống phân cấp trong app:
+     * - Admin có thể tạo tất cả các loại tài khoản
+     * - Đại lý cấp 1 có thể tạo Đại lý cấp 2 và Người dùng
+     * - Đại lý cấp 2 chỉ có thể tạo Người dùng
+     * Thuộc tính này cho phép truy vết "ai tạo ra ai" và hỗ trợ chức năng quản lý user theo cấp bậc
+     */
+    parentId: {
+      type: Schema.Types.ObjectId,
+      ref: DOCUMENT_NAMES.USER,
       default: null
     },
     bankAccountId: {
       type: Schema.Types.ObjectId,
-      ref: 'BankAccount',
+      ref: DOCUMENT_NAMES.BANK_ACCOUNT,
       default: null
     }
   },
@@ -65,4 +80,4 @@ userSchema.methods.comparePassword = async function (userPassword) {
   return brcypt.compare(userPassword, this.password)
 }
 
-export const userModel = mongoose.model(USER_DOCUMENT_NAME, userSchema)
+export const userModel = mongoose.model(DOCUMENT_NAMES.USER, userSchema)
