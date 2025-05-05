@@ -10,6 +10,12 @@ export const USER_ROLES = {
   CLIENT: 'Client'
 }
 
+// Các loại xe trong hệ thống
+export const CAR_TYPES = {
+  VIP: 'VIP',
+  REGULAR: 'Regular'
+}
+
 // Regular expressions và rules cho validation
 export const VALIDATION_RULES = {
   // Regex cho số điện thoại Việt Nam
@@ -29,7 +35,9 @@ export const VALIDATION_RULES = {
 export const DOCUMENT_NAMES = {
   USER: 'User',
   USER_ROLE: 'UserRole',
-  BANK_ACCOUNT: 'BankAccount'
+  BANK_ACCOUNT: 'BankAccount',
+  CAR_COMPANY: 'CarCompany',
+  TICKET: 'Ticket'
 }
 
 // Các quyền hạn chi tiết
