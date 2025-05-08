@@ -27,4 +27,4 @@ Tất cả các API đều trả về dữ liệu ở định dạng JSON với 
 ## Các nhóm API
 
 - [User API](./endpoints/user.md) - Quản lý người dùng
-- [Role API](./endpoints/user-role.md) - Quản lý vai trò và quyền hạn
+- [Role API](./endpoints/user-role.md) - Quản lý vai trò và quyền hạn -[Company API](./endpoints/company.md) - Quản lý công ty xe
