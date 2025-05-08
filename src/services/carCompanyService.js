@@ -54,6 +54,8 @@ const updateCarCompany = async (carCompanyId, updateData) => {
     throw new NotFoundError('Car company not found')
   }
 
+  delete updateData.totalSeats // Không cho phép cập nhật tổng số ghế từ bên ngoài
+
   // Cập nhật thông tin công ty xe
   const updatedCarCompany = await carCompanyRepository.updateById(carCompanyId, updateData)
   return updatedCarCompany
