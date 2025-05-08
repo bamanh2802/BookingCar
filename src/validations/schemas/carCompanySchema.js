@@ -33,11 +33,6 @@ export const carCompanySchema = Joi.object({
     'any.required': 'Loại xe là trường bắt buộc'
   }),
 
-  totalSeats: Joi.number().required().messages({
-    'number.base': 'Tổng số ghế phải là một số',
-    'any.required': 'Tổng số ghế là trường bắt buộc'
-  }),
-
   seatMap: Joi.array().items(
     Joi.object({
       code: Joi.string().required(),
@@ -69,10 +64,6 @@ export const carCompanyUpdateSchema = Joi.object({
 
   type: Joi.string().valid(CAR_TYPES.REGULAR, CAR_TYPES.VIP).messages({
     'any.only': 'Loại xe không hợp lệ'
-  }),
-
-  totalSeats: Joi.number().messages({
-    'number.base': 'Tổng số ghế phải là một số'
   }),
 
   seatMap: Joi.array().items(

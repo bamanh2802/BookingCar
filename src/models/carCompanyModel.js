@@ -1,10 +1,22 @@
 import mongoose, { Schema } from 'mongoose'
 import { CAR_TYPES, DOCUMENT_NAMES, VALIDATION_RULES } from '~/constants'
 
-const seatSchema = new Schema({
-  code: String,
-  floor: Number
-})
+const seatSchema = new Schema(
+  {
+    code: {
+      type: String,
+      required: true,
+      trim: true,
+      maxLength: [3, 'Seat code cannot exceed 3 characters']
+    },
+    floor: {
+      type: Number,
+      required: true
+    }
+  },
+  { _id: false } // Optional: không cần _id riêng cho mỗi seat nếu không dùng đến
+)
+
 const carCompanySchema = new Schema(
   {
     name: {
@@ -37,13 +49,27 @@ const carCompanySchema = new Schema(
     },
     totalSeats: {
       type: Number,
-      required: true
+      required: true,
+      default: 0,
+      min: [0, 'Total seats cannot be negative']
     },
-    seatMap: [seatSchema]
+    seatMap: {
+      type: [seatSchema],
+      default: []
+    }
   },
   {
     timestamps: true
   }
 )
+
+// Middleware: Tính toán tổng số ghế trước khi lưu vào database
+// Middleware này sẽ tự động chạy trước khi validate (trước khi lưu vào database)
+carCompanySchema.pre('validate', function (next) {
+  if (Array.isArray(this.seatMap)) {
+    this.totalSeats = this.seatMap.length
+  }
+  next()
+})
 
 export const carCompanyModel = mongoose.model(DOCUMENT_NAMES.CAR_COMPANY, carCompanySchema)
