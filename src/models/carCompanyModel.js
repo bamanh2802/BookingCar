@@ -49,9 +49,9 @@ const carCompanySchema = new Schema(
     },
     totalSeats: {
       type: Number,
-      required: true,
-      default: 0,
-      min: [0, 'Total seats cannot be negative']
+      default: function () {
+        return this.seatMap.length
+      }
     },
     seatMap: {
       type: [seatSchema],

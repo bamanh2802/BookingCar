@@ -37,7 +37,9 @@ export const DOCUMENT_NAMES = {
   USER_ROLE: 'UserRole',
   BANK_ACCOUNT: 'BankAccount',
   CAR_COMPANY: 'CarCompany',
-  TICKET: 'Ticket'
+  TICKET: 'Ticket',
+  TRIP: 'Trip',
+  SEAT_MAP: 'SeatMap'
 }
 
 // Các quyền hạn chi tiết
