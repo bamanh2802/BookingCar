@@ -48,7 +48,6 @@ export const carCompanyUpdateSchema = Joi.object({
     .max(VALIDATION_RULES.FULLNAME_MAX_LENGTH)
     .trim()
     .messages({
-      'string.empty': 'Tên công ty không được để trống',
       'string.max': 'Tên công ty không được vượt quá 100 ký tự',
       'string.min': 'Tên công ty phải có ít nhất 2 ký tự'
     }),
@@ -58,7 +57,6 @@ export const carCompanyUpdateSchema = Joi.object({
   }),
 
   hotline: Joi.string().pattern(VALIDATION_RULES.PHONE_NUMBER_RULE).trim().messages({
-    'string.empty': 'Số điện thoại không được để trống',
     'string.pattern.base': 'Số điện thoại không hợp lệ'
   }),
 

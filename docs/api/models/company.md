@@ -6,17 +6,17 @@ Mô hình dữ liệu `CarCompany` đại diện cho thông tin các nhà xe tro
 
 ## Cấu trúc
 
-| Trường        | Kiểu     | Mô tả                                                       |
-| ------------- | -------- | ----------------------------------------------------------- |
-| `_id`         | ObjectId | ID duy nhất của nhà xe                                      |
-| `name`        | String   | Tên nhà xe, bắt buộc, độ dài tối thiểu/tối đa theo cấu hình |
-| `description` | String   | Mô tả nhà xe, tối đa 500 ký tự                              |
-| `hotline`     | String   | Số điện thoại liên hệ, định dạng hợp lệ và bắt buộc         |
-| `type`        | String   | Loại xe (`VIP` hoặc `REGULAR`), bắt buộc                    |
-| `totalSeats`  | Number   | Tổng số ghế, tự động tính từ `seatMap`, không âm            |
-| `seatMap`     | Array    | Danh sách các ghế, gồm `code` và `floor`                    |
-| `createdAt`   | Date     | Thời điểm tạo bản ghi, tự động sinh                         |
-| `updatedAt`   | Date     | Thời điểm cập nhật gần nhất, tự động sinh                   |
+| Trường      | Kiểu     | Mô tả                                                       |
+| ----------- | -------- | ----------------------------------------------------------- |
+| \_id        | ObjectId | ID duy nhất của nhà xe                                      |
+| name        | String   | Tên nhà xe, bắt buộc, độ dài tối thiểu/tối đa theo cấu hình |
+| description | String   | Mô tả nhà xe, tối đa 500 ký tự                              |
+| hotline     | String   | Số điện thoại liên hệ, định dạng hợp lệ và bắt buộc         |
+| type        | String   | Loại xe (`VIP` hoặc `REGULAR`), bắt buộc                    |
+| totalSeats  | Number   | Tổng số ghế, tự động tính từ `seatMap`, không âm            |
+| seatMap     | Array    | Danh sách các ghế, gồm `code` và `floor`                    |
+| createdAt   | Date     | Thời điểm tạo bản ghi, tự động sinh                         |
+| updatedAt   | Date     | Thời điểm cập nhật gần nhất, tự động sinh                   |
 
 ---
 
