@@ -8,7 +8,7 @@ const createCarCompany = async (carCompany) => {
   // Kiểm tra xem công ty xe đã tồn tại chưa
   const existingCarCompany = await carCompanyRepository.existsByNameOrHotline(carCompany.name, carCompany.hotline)
   if (existingCarCompany) {
-    throw new ConflictError('Car company already exists')
+    throw new ConflictError('Nhà xe đã tồn tại với tên hoặc số điện thoại này')
   }
 
   // Tạo công ty xe mới
