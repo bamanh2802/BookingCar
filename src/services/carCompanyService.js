@@ -36,7 +36,7 @@ const getCarCompanies = async (filter = {}, page = 1, limit = 10) => {
 const getCarCompanyById = async (carCompanyId) => {
   const carCompany = await carCompanyRepository.findById(carCompanyId)
   if (!carCompany) {
-    throw new NotFoundError('Car company not found')
+    throw new NotFoundError('Nhà xe không tồn tại')
   }
   return carCompany
 }
@@ -51,7 +51,7 @@ const updateCarCompany = async (carCompanyId, updateData) => {
   // Kiểm tra xem công ty xe có tồn tại không
   const carCompany = await carCompanyRepository.findById(carCompanyId)
   if (!carCompany) {
-    throw new NotFoundError('Car company not found')
+    throw new NotFoundError('Nhà xe không tồn tại')
   }
 
   delete updateData.totalSeats // Không cho phép cập nhật tổng số ghế từ bên ngoài
@@ -70,7 +70,7 @@ const deleteCarCompany = async (carCompanyId) => {
   // Kiểm tra xem công ty xe có tồn tại không
   const carCompany = await carCompanyRepository.findById(carCompanyId)
   if (!carCompany) {
-    throw new NotFoundError('Car company not found')
+    throw new NotFoundError('Nhà xe không tồn tại')
   }
 
   // Xóa công ty xe

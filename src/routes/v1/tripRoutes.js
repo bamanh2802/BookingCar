@@ -1,5 +1,5 @@
 import express from 'express'
-import { PERMISSIONS, USER_ROLES } from '~/constants'
+import { PERMISSIONS } from '~/constants'
 import { tripController } from '~/controllers/tripController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
 import { tripValidation } from '~/validations/tripValidation'
@@ -7,7 +7,7 @@ import { tripValidation } from '~/validations/tripValidation'
 const Router = express.Router()
 
 Router.route('/')
-  .get(authMiddleware.authenticate, authMiddleware.restrictTo(USER_ROLES.ADMIN), tripController.getTrips)
+  .get(authMiddleware.authenticate, tripController.getTrips)
   .post(
     authMiddleware.authenticate,
     authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROUTES),
@@ -16,7 +16,11 @@ Router.route('/')
   )
 
 Router.route('/:tripId')
-  .get(authMiddleware.authenticate, tripController.getTripById)
+  .get(
+    authMiddleware.authenticate,
+    authMiddleware.hasPermission(PERMISSIONS.VIEW_DETAIL_TRIP),
+    tripController.getTripById
+  )
   .patch(
     authMiddleware.authenticate,
     authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROUTES),

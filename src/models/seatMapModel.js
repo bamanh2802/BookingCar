@@ -7,6 +7,7 @@ const seatMapSchema = new Schema(
     seats: {
       type: [
         {
+          _id: false,
           code: {
             type: String,
             required: true,
