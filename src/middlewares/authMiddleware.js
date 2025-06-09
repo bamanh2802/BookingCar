@@ -4,6 +4,7 @@ import userRepository from '~/repositories/userRepository'
 import userRoleRepository from '~/repositories/userRoleRepository'
 import { catchAsync } from '~/utils/catchAsync'
 import { AuthenticationError } from '~/utils/errors'
+import ticketRequestRepository from '~/repositories/ticketRequestRepository'
 
 /**
  * Middleware kiểm tra người dùng đã đăng nhập chưa
@@ -199,9 +200,57 @@ const canManageUser = catchAsync(async (req, res, next) => {
   next()
 })
 
+/**
+ * Middleware: Chỉ cho phép CLIENT xem ticket requests/ticket của chính họ
+ */
+const checkViewTicketByUserId = catchAsync(async (req, res, next) => {
+  const { userId } = req.params
+  const userRole = req.userRole?.roleName
+  if (userRole === 'Client' && req.user._id.toString() !== userId) {
+    return res.status(403).json({ message: 'Bạn không có quyền xem !' })
+  }
+  next()
+})
+
+/**
+ * Middleware: Chỉ cho phép CLIENT xem trip liên quan đến mình, role khác xem được tất cả
+ */
+const checkViewTripByUserRole = catchAsync(async (req, res, next) => {
+  const userRole = req.userRole?.roleName
+  if (userRole !== 'Client') return next()
+
+  const { tripId } = req.params
+  const userId = req.user._id.toString()
+  // Kiểm tra xem tripId có liên quan đến user này không (dựa vào ticketRequest)
+  const ticketRequest = await ticketRequestRepository.findTicketRequestByUserIdAndTripId(userId, tripId)
+  if (!ticketRequest) {
+    return res.status(403).json({ message: 'Bạn không có quyền xem thông tin chuyến đi này.' })
+  }
+  next()
+})
+
+/**
+ * Middleware: Chỉ cho phép CLIENT xem ticketRequestId của chính họ, role khác xem được tất cả
+ */
+const checkViewTicketRequestById = catchAsync(async (req, res, next) => {
+  const userRole = req.userRole?.roleName
+  if (userRole !== 'Client') return next()
+  const { ticketRequestId } = req.params
+  const userId = req.user._id.toString()
+
+  const ticketRequest = await ticketRequestRepository.findTicketRequestById(ticketRequestId)
+  if (!ticketRequest || ticketRequest.userId.toString() !== userId) {
+    return res.status(403).json({ message: 'Bạn không có quyền xem yêu cầu vé này.' })
+  }
+  next()
+})
+
 export const authMiddleware = {
   authenticate,
   restrictTo,
   hasPermission,
-  canManageUser
+  canManageUser,
+  checkViewTicketByUserId,
+  checkViewTripByUserRole,
+  checkViewTicketRequestById
 }

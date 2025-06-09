@@ -41,6 +41,11 @@ export const tripSchema = Joi.object({
     'number.min': 'Giá vé phải lớn hơn hoặc bằng 0',
     'any.required': 'Giá vé là trường bắt buộc'
   }),
+  type: Joi.string().valid(CAR_TYPES.VIP, CAR_TYPES.REGULAR).required().messages({
+    'string.empty': 'Loại xe không được để trống',
+    'any.only': 'Loại xe không hợp lệ',
+    'any.required': 'Loại xe là trường bắt buộc'
+  }),
 
   carCompanyId: Joi.string().required().messages({
     'string.empty': 'ID công ty xe không được để trống',

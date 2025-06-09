@@ -76,13 +76,13 @@ class TripRespository extends BaseRepository {
   /**
    * Tìm kiếm chuyến đi theo địa điểm và thời gian
    */
-  async checkExistingTrip(startLocation, endLocation, startTime, endTime) {
+  async checkExistingTrip(startLocation, endLocation, startTime, endTime, carCompanyId) {
     return this.findOne({
       startLocation,
       endLocation,
       startTime: { $gte: startTime },
       endTime: { $lte: endTime },
-      carCompanyId: { $ne: null }
+      carCompanyId
     })
   }
 }

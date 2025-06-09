@@ -43,7 +43,7 @@ export const pickTrip = (trip) => {
   // Tính thời lượng
   const diffMs = dayjs(endTime).diff(dayjs(startTime))
   const durationObj = dayjs.duration(diffMs)
-  const time = `${durationObj.hours()} h ${durationObj.minutes()} m`
+  const time = `${durationObj.hours()}h${durationObj.minutes()}m`
 
   return {
     _id,

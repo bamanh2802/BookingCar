@@ -10,6 +10,15 @@ export const USER_ROLES = {
   CLIENT: 'Client'
 }
 
+// Các trạng thái của vé
+export const TICKET_STATUS = {
+  PENDING: 'Pending', // Chờ xử lý // chưa thanh toán
+  CONFIRMED: 'Confirmed', // Đã xác nhận // thanh toán thành công
+  CANCELLED: 'Cancelled', // Đã hủy
+  REFUNDED: 'Refunded', // Đã hoàn tiền
+  DONE: 'Done' // Đã hoàn thành chuyến đi
+}
+
 // Các loại xe trong hệ thống
 export const CAR_TYPES = {
   VIP: 'VIP',
@@ -39,7 +48,8 @@ export const DOCUMENT_NAMES = {
   CAR_COMPANY: 'CarCompany',
   TICKET: 'Ticket',
   TRIP: 'Trip',
-  SEAT_MAP: 'SeatMap'
+  SEAT_MAP: 'SeatMap',
+  TICKET_REQUEST: 'TicketRequest'
 }
 
 // Các quyền hạn chi tiết
@@ -52,6 +62,7 @@ export const PERMISSIONS = {
   MANAGE_REFUNDS: 'manage_refunds',
   MANAGE_REVIEWS: 'manage_reviews',
   MANAGE_REPORTS: 'manage_reports',
+  MANAGE_TICKET_REQUESTS: 'manage_ticket_requests',
 
   // Quyền đại lý cấp 1
   MANAGE_AGENTS_LV2: 'manage_agents_lv2',
@@ -64,6 +75,8 @@ export const PERMISSIONS = {
   VIEW_REPORTS_CLIENTS: 'view_reports_clients',
 
   // Quyền người dùng
+  VIEW_TICKET_REQUESTS: 'view_ticket_requests',
+  VIEW_DETAIL_TRIP: 'view_detail_trips',
   BOOK_TICKETS: 'book_tickets',
   VIEW_HISTORY: 'view_history',
   SUBMIT_REVIEWS: 'submit_reviews',
@@ -89,26 +102,36 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     PERMISSIONS.BOOK_TICKETS,
     PERMISSIONS.VIEW_HISTORY,
     PERMISSIONS.SUBMIT_REVIEWS,
-    PERMISSIONS.REQUEST_REFUNDS
+    PERMISSIONS.REQUEST_REFUNDS,
+    PERMISSIONS.MANAGE_TICKET_REQUESTS,
+    PERMISSIONS.VIEW_TICKET_REQUESTS,
+    PERMISSIONS.VIEW_DETAIL_TRIP
   ],
   [USER_ROLES.AGENT_LV1]: [
     PERMISSIONS.MANAGE_AGENTS_LV2,
     PERMISSIONS.VIEW_TICKETS_AGENTS_LV2,
     PERMISSIONS.VIEW_REPORTS_AGENTS_LV2,
     PERMISSIONS.BOOK_TICKETS,
-    PERMISSIONS.VIEW_HISTORY
+    PERMISSIONS.VIEW_HISTORY,
+    PERMISSIONS.MANAGE_TICKET_REQUESTS,
+    PERMISSIONS.VIEW_TICKET_REQUESTS,
+    PERMISSIONS.VIEW_DETAIL_TRIP
   ],
   [USER_ROLES.AGENT_LV2]: [
     PERMISSIONS.MANAGE_CLIENTS,
     PERMISSIONS.VIEW_TICKETS_CLIENTS,
     PERMISSIONS.VIEW_REPORTS_CLIENTS,
     PERMISSIONS.BOOK_TICKETS,
-    PERMISSIONS.VIEW_HISTORY
+    PERMISSIONS.VIEW_HISTORY,
+    PERMISSIONS.VIEW_TICKET_REQUESTS,
+    PERMISSIONS.VIEW_DETAIL_TRIP
   ],
   [USER_ROLES.CLIENT]: [
     PERMISSIONS.BOOK_TICKETS,
     PERMISSIONS.VIEW_HISTORY,
     PERMISSIONS.SUBMIT_REVIEWS,
-    PERMISSIONS.REQUEST_REFUNDS
+    PERMISSIONS.REQUEST_REFUNDS,
+    PERMISSIONS.VIEW_TICKET_REQUESTS,
+    PERMISSIONS.VIEW_DETAIL_TRIP
   ]
 }

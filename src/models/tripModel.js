@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import { Schema } from 'mongoose'
-import { DOCUMENT_NAMES } from '~/constants'
+import { CAR_TYPES, DOCUMENT_NAMES } from '~/constants'
 import { ConflictError } from '~/utils/errors'
 
 const tripSchema = new Schema(
@@ -47,6 +47,11 @@ const tripSchema = new Schema(
       type: Number,
       required: true,
       min: [0, 'Price cannot be negative']
+    },
+    type: {
+      type: String,
+      enum: [CAR_TYPES.VIP, CAR_TYPES.REGULAR],
+      required: true
     },
     availableSeats: {
       type: Number,

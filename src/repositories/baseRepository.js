@@ -107,6 +107,26 @@ class BaseRepository {
   async exists(filter) {
     return this.model.exists(filter)
   }
+
+  /**
+   * Tìm kiếm với phân trang
+   * @param {Object} filter - Filter criteria
+   * @param {Number} page - Current page
+   * @param {Number} limit - Number of items per page
+   * @param {Object} sort - Sort options
+   * @returns {Promise<Object>} Paginated results
+   */
+  async findWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
+    const skip = (page - 1) * limit
+    const [results, total] = await Promise.all([this.findAll(filter, '', { skip, limit, sort }), this.count(filter)])
+    return {
+      results,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  }
 }
 
 export default BaseRepository

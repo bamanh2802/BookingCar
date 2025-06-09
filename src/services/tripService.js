@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import carCompanyRepository from '~/repositories/carCompanyRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
-import tripRespository from '~/repositories/tripRespository'
+import tripRespository from '~/repositories/tripRepository'
 import { ConflictError } from '~/utils/errors'
 import { pickTrip } from '~/utils/formatter'
 import { dayRangeUTC, toUTC } from '~/utils/timeTranfer'
@@ -42,7 +42,8 @@ const createTrip = async (tripData) => {
   session.startTransaction()
 
   try {
-    const { startLocation, endLocation, startStation, endStation, startTime, endTime, price, carCompanyId } = tripData
+    const { startLocation, endLocation, startStation, endStation, startTime, endTime, price, carCompanyId, type } =
+      tripData
 
     // kiểm tra xem chuyến đi đã tồn tại hay chưa
     const existedTrip = await tripRespository.checkExistingTrip(
@@ -81,6 +82,7 @@ const createTrip = async (tripData) => {
         startStation,
         endStation,
         carCompanyId,
+        type,
         seatMapId: newSeatMap._id,
         totalSeats: carCompany.totalSeats
       },
@@ -99,7 +101,7 @@ const createTrip = async (tripData) => {
     await session.commitTransaction()
     session.endSession()
 
-    return { ...pickTrip(trip), carCompanyName: carCompany.name, carCompanyType: carCompany.type }
+    return { carCompanyName: carCompany.name, ...pickTrip(trip) }
   } catch (error) {
     await session.abortTransaction()
     session.endSession()
