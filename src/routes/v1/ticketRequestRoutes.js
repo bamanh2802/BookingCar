@@ -9,7 +9,7 @@ const Router = express.Router()
 Router.route('/')
   .get(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKET_REQUESTS),
+    authMiddleware.hasPermission(PERMISSIONS.MANAGE_TICKET_REQUESTS),
     ticketRequestController.getTicketRequests
   )
   .post(
@@ -47,7 +47,7 @@ Router.route('/user/:userId').get(
 
 Router.route('/trip/:tripId').get(
   authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKET_REQUESTS),
+  authMiddleware.hasPermission(PERMISSIONS.MANAGE_TICKET_REQUESTS),
   authMiddleware.checkViewTripByUserRole,
   ticketRequestController.getTicketRequestsByTripId
 )
