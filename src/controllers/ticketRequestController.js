@@ -8,7 +8,8 @@ const { catchAsync } = require('~/utils/catchAsync')
  * tạo yêu cầu vé mới
  */
 const createTicketRequest = catchAsync(async (req, res) => {
-  const ticketRequest = await ticketRequestService.createTicketRequest(req.body)
+  const currentUser = req.user
+  const ticketRequest = await ticketRequestService.createTicketRequest(req.body, currentUser)
   return res.status(StatusCodes.CREATED).json(ApiResponse.created(ticketRequest, 'Tạo yêu cầu vé thành công'))
 })
 
