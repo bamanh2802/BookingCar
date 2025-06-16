@@ -1,7 +1,9 @@
 import { catchAsync } from '~/utils/catchAsync'
 import { StatusCodes } from 'http-status-codes'
-import { ApiResponse } from '~/utils/ApiResponse'
+import ApiResponse from '~/utils/ApiResponse'
+
 import ticketService from '~/services/ticketService'
+import { USER_ROLES } from '~/constants'
 
 /**
  * Tạo mới vé
@@ -12,14 +14,19 @@ const createTicket = catchAsync(async (req, res) => {
 })
 
 /**
- * Lấy danh sách vé
+ * Lấy danh sách vé (dành cho admin, agent lv1,agent lv2)
  */
 const getTickets = catchAsync(async (req, res) => {
   const { page, limit } = req.query
-  const filter = req.query.filter || {}
+  let filter = req.query.filter || {}
+  //Lấy danh sách vé dc tạo bởi agent lv2 (dành cho agent lv2)
+  if (req.user.roleName === USER_ROLES.AGENT_LV2) {
+    filter.createdBy = req.user._id
+  }
   const tickets = await ticketService.getTickets(filter, page, limit)
   return res.status(StatusCodes.OK).json(ApiResponse.success(tickets, 'Lấy danh sách vé thành công'))
 })
+
 /**
  * Lấy vé theo ID
  */
@@ -68,15 +75,6 @@ const getTicketsByTripId = catchAsync(async (req, res) => {
 })
 
 /**
- * Lấy vé theo ID người dùng và ID vé
- */
-const getTicketByUserIdAndTicketId = catchAsync(async (req, res) => {
-  const { userId, ticketId } = req.params
-  const ticket = await ticketService.getTicketByUserIdAndTicketId(userId, ticketId)
-  return res.status(StatusCodes.OK).json(ApiResponse.success(ticket, 'Lấy thông tin vé thành công'))
-})
-
-/**
  * Lấy vé theo ID người dùng và ID chuyến đi
  */
 const getTicketsByUserIdAndTripId = catchAsync(async (req, res) => {
@@ -86,7 +84,7 @@ const getTicketsByUserIdAndTripId = catchAsync(async (req, res) => {
     .status(StatusCodes.OK)
     .json(ApiResponse.success(tickets, 'Lấy danh sách vé của người dùng và chuyến đi thành công'))
 })
-module.exports = {
+export const ticketController = {
   createTicket,
   getTickets,
   getTicketById,
@@ -94,6 +92,5 @@ module.exports = {
   deleteTicket,
   getTicketsByUserId,
   getTicketsByTripId,
-  getTicketByUserIdAndTicketId,
   getTicketsByUserIdAndTripId
 }

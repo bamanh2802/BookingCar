@@ -1,5 +1,7 @@
 import { ticketModel } from '~/models/ticketModel'
 import BaseRepository from './baseRepository'
+import { Types } from 'mongoose'
+import { DOCUMENT_NAMES } from '~/constants'
 
 class TicketRequestRepository extends BaseRepository {
   constructor() {
@@ -17,6 +19,98 @@ class TicketRequestRepository extends BaseRepository {
    */
   async findTicketById(ticketId) {
     return this.findOne({ _id: ticketId })
+  }
+
+  /**
+   * Lấy thông tin vé
+   */
+  async getTicketDetail(id) {
+    const pipeline = [
+      { $match: { _id: new Types.ObjectId(id) } },
+      {
+        $lookup: {
+          from: 'users',
+          let: { userId: '$userId' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$userId'] } }
+            },
+            {
+              $lookup: {
+                from: 'users',
+                let: { parentId: '$parentId' },
+                pipeline: [
+                  {
+                    $match: { $expr: { $eq: ['$_id', '$$parentId'] } }
+                  },
+                  {
+                    $project: {
+                      email: 1,
+                      fullName: 1,
+                      phone: 1
+                    }
+                  }
+                ],
+                as: 'parentInfo'
+              }
+            },
+            {
+              $unwind: {
+                path: '$parentInfo',
+                preserveNullAndEmptyArrays: true
+              }
+            },
+            {
+              $project: {
+                email: 1,
+                fullName: 1,
+                phone: 1,
+                roleId: 1,
+                parentInfo: 1
+              }
+            }
+          ],
+          as: 'userInfor'
+        }
+      },
+      { $unwind: '$userInfor' },
+
+      // Lookup tripInfo
+      {
+        $lookup: {
+          from: 'trips',
+          let: { tripId: '$tripId' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$tripId'] } }
+            }
+          ],
+          as: 'tripInfo'
+        }
+      },
+      { $unwind: '$tripInfo' },
+
+      // Lookup carCompanyInfo trực tiếp sau khi đã có tripInfo
+      {
+        $lookup: {
+          from: 'carcompanies',
+          let: { carCompanyId: '$tripInfo.carCompanyId' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$carCompanyId'] } }
+            },
+            {
+              $project: { seatMap: 0 }
+            }
+          ],
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: '$carCompanyInfo' }
+    ]
+
+    const result = await this.model.aggregate(pipeline)
+    return result[0] || null
   }
 
   /**

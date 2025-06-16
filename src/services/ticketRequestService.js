@@ -139,6 +139,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       const existedSeatSet = new Set((seatMap.seats || []).map((seat) => `${seat.code}_${seat.floor}`))
       const duplicated = requestedSeats.find((seat) => existedSeatSet.has(`${seat.code}_${seat.floor}`))
       if (duplicated) {
+        await ticketRequestRepository.deleteTicketRequest(ticketRequestId)
         throw new ConflictError(`Ghế đã tồn tại: code=${duplicated.code}, floor=${duplicated.floor}`)
       }
 

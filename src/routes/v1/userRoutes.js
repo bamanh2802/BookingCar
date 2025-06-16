@@ -1,5 +1,5 @@
 import express from 'express'
-import { PERMISSIONS, USER_ROLES } from '~/constants'
+import { PERMISSIONS } from '~/constants'
 import { userController } from '~/controllers/userController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
 import ApiResponse from '~/utils/ApiResponse'
@@ -25,14 +25,14 @@ Router.route('/profile')
 // Route lấy danh sách người dùng (cần quyền tương ứng)
 Router.route('/list').get(
   authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.MANAGE_USERS, PERMISSIONS.MANAGE_AGENTS_LV2, PERMISSIONS.MANAGE_CLIENTS),
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_USERS),
   userController.getUsers
 )
 
 // Route tạo người dùng mới (cần quyền tương ứng)
 Router.route('/create').post(
   authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.MANAGE_USERS, PERMISSIONS.MANAGE_AGENTS_LV2, PERMISSIONS.MANAGE_CLIENTS),
+  authMiddleware.hasPermission(PERMISSIONS.CREATE_USER),
   userValidation.register,
   userController.createUser
 )
@@ -41,22 +41,28 @@ Router.route('/create').post(
 Router.route('/:userId')
   .get(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_USERS, PERMISSIONS.MANAGE_AGENTS_LV2, PERMISSIONS.MANAGE_CLIENTS),
+    authMiddleware.hasPermission(PERMISSIONS.VIEW_USERS),
     authMiddleware.canManageUser,
     userController.getUserById
   )
   .patch(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_USERS, PERMISSIONS.MANAGE_AGENTS_LV2, PERMISSIONS.MANAGE_CLIENTS),
+    authMiddleware.hasPermission(PERMISSIONS.UPDATE_USER),
     authMiddleware.canManageUser,
     userValidation.updateProfile,
     userController.updateUser
   )
+// .delete(
+//   authMiddleware.authenticate,
+//   authMiddleware.hasPermission(PERMISSIONS.DELETE_USER),
+//   authMiddleware.canManageUser,
+//   userController.deleteUser
+// )
 
 // Route yêu cầu xác thực và phân quyền - Admin only
 Router.route('/admin-area').get(
   authMiddleware.authenticate,
-  authMiddleware.restrictTo(USER_ROLES.ADMIN),
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_USERS),
   (req, res) => {
     res.status(200).json(ApiResponse.success({ message: 'Admin area' }))
   }
@@ -65,7 +71,7 @@ Router.route('/admin-area').get(
 // Route yêu cầu xác thực và phân quyền - Agent Level 1 only
 Router.route('/agent-lv1-area').get(
   authMiddleware.authenticate,
-  authMiddleware.restrictTo(USER_ROLES.AGENT_LV1),
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKETS_AGENTS_LV2),
   (req, res) => {
     res.status(200).json(ApiResponse.success({ message: 'Agent Level 1 area' }))
   }
@@ -74,7 +80,7 @@ Router.route('/agent-lv1-area').get(
 // Route yêu cầu xác thực và phân quyền - Agent Level 2 only
 Router.route('/agent-lv2-area').get(
   authMiddleware.authenticate,
-  authMiddleware.restrictTo(USER_ROLES.AGENT_LV2),
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKETS_CLIENTS),
   (req, res) => {
     res.status(200).json(ApiResponse.success({ message: 'Agent Level 2 area' }))
   }
