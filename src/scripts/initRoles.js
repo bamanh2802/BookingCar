@@ -10,7 +10,7 @@ export const createDefaultRoles = async () => {
   try {
     const roles = {}
 
-    // Tạo vai trò mặc định nếu chưa tồn tại
+    // Tạo vai trò mặc định nếu chưa tồn tại, hoặc cập nhật permissions nếu đã tồn tại
     for (const roleName of Object.values(USER_ROLES)) {
       const existingRole = await userRole.findOne({ roleName })
 
@@ -22,8 +22,24 @@ export const createDefaultRoles = async () => {
         roles[roleName] = newRole
         logger.info(`Created role: ${roleName}`)
       } else {
+        // Cập nhật permissions cho role đã tồn tại
+        const updatedPermissions = DEFAULT_ROLE_PERMISSIONS[roleName] || []
+        
+        // Kiểm tra xem có cần cập nhật permissions không
+        const currentPermissions = existingRole.permissions || []
+        const needsUpdate = 
+          updatedPermissions.length !== currentPermissions.length ||
+          !updatedPermissions.every(permission => currentPermissions.includes(permission))
+
+        if (needsUpdate) {
+          existingRole.permissions = updatedPermissions
+          await existingRole.save()
+          logger.info(`Updated permissions for role: ${roleName}`)
+        } else {
+          logger.info(`Role permissions already up to date: ${roleName}`)
+        }
+        
         roles[roleName] = existingRole
-        logger.info(`Role already exists: ${roleName}`)
       }
     }
 

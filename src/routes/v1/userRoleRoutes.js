@@ -2,22 +2,26 @@ import express from 'express'
 import { PERMISSIONS } from '~/constants'
 import { userRoleController } from '~/controllers/userRoleController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
+import ApiResponse from '~/utils/ApiResponse'
 
 const Router = express.Router()
 
-// Lấy danh sách tất cả quyền hỗ trợ
-Router.get(
-  '/permissions',
+// Route public - GET
+Router.route('/').get((req, res) => {
+  res.status(200).json(ApiResponse.success({ message: 'Role API' }))
+})
+
+// Lấy danh sách quyền có sẵn
+Router.route('/permissions').get(
   authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
-  userRoleController.getRolePermissions
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_ROLES),
+  userRoleController.getAllPermissions
 )
 
-// Lấy danh sách quyền của vai trò cụ thể
-Router.get(
-  '/:roleId/permissions',
+// Lấy quyền của role cụ thể
+Router.route('/:roleId/permissions').get(
   authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_ROLES),
   userRoleController.getRolePermissions
 )
 
@@ -25,29 +29,29 @@ Router.get(
 Router.route('/')
   .get(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+    authMiddleware.hasPermission(PERMISSIONS.VIEW_ROLES),
     userRoleController.getAllRoles
   )
   .post(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+    authMiddleware.hasPermission(PERMISSIONS.CREATE_ROLE),
     userRoleController.createRole
   )
 
 Router.route('/:roleId')
   .get(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+    authMiddleware.hasPermission(PERMISSIONS.VIEW_ROLES),
     userRoleController.getRoleById
   )
   .patch(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+    authMiddleware.hasPermission(PERMISSIONS.UPDATE_ROLE),
     userRoleController.updateRole
   )
   .delete(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+    authMiddleware.hasPermission(PERMISSIONS.DELETE_ROLE),
     userRoleController.deleteRole
   )
 
@@ -55,7 +59,7 @@ Router.route('/:roleId')
 Router.patch(
   '/:roleId/permissions',
   authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+  authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLE_PERMISSIONS),
   userRoleController.updateRolePermissions
 )
 
@@ -63,7 +67,7 @@ Router.patch(
 Router.patch(
   '/:roleId/inherits',
   authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLES),
+  authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROLE_PERMISSIONS),
   userRoleController.updateRoleInherits
 )
 

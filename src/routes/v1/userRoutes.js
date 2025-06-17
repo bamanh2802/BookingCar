@@ -33,7 +33,7 @@ Router.route('/list').get(
 Router.route('/create').post(
   authMiddleware.authenticate,
   authMiddleware.hasPermission(PERMISSIONS.CREATE_USER),
-  userValidation.register,
+  userValidation.createUser,
   userController.createUser
 )
 

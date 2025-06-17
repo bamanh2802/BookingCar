@@ -6,7 +6,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `VIEW_ROLES`
 
 **Response (200):**
 
@@ -31,7 +31,7 @@
       "createdAt": "2025-05-05T12:00:00.000Z",
       "updatedAt": "2025-05-05T12:00:00.000Z"
     }
-    / Các vai trò khác
+    // Các vai trò khác
   ]
 }
 ```
@@ -42,7 +42,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `CREATE_ROLE`
 
 **Request Body:**
 
@@ -77,7 +77,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `VIEW_ROLES`
 
 **Response (200):**
 
@@ -102,7 +102,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `UPDATE_ROLE`
 
 **Request Body:**
 
@@ -135,7 +135,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `DELETE_ROLE`
 
 **Response (200):**
 
@@ -152,7 +152,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `VIEW_ROLES`
 
 **Response (200):**
 
@@ -162,13 +162,36 @@
   "message": "Lấy danh sách quyền thành công",
   "data": {
     "availablePermissions": [
-      "MANAGE_USERS",
-      "MANAGE_ROLES",
-      "MANAGE_AGENTS_LV1",
-      "MANAGE_AGENTS_LV2",
-      "MANAGE_CLIENTS",
-      "VIEW_DASHBOARD",
-      "VIEW_REPORTS"
+      "view_users",
+      "create_user",
+      "update_user",
+      "delete_user",
+      "view_roles",
+      "create_role",
+      "update_role",
+      "delete_role",
+      "manage_role_permissions",
+      "view_tickets",
+      "create_ticket",
+      "update_ticket",
+      "delete_ticket",
+      "view_detail_ticket",
+      "view_history",
+      "view_ticket_requests",
+      "create_ticket_request",
+      "update_ticket_request",
+      "delete_ticket_request",
+      "view_trips",
+      "create_trip",
+      "update_trip",
+      "delete_trip",
+      "view_detail_trips",
+      "view_tickets_agents_lv2",
+      "view_reports_agents_lv2",
+      "view_tickets_clients",
+      "view_reports_clients",
+      "submit_reviews",
+      "request_refunds"
     ]
   }
 }
@@ -180,7 +203,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `VIEW_ROLES`
 
 **Response (200):**
 
@@ -191,13 +214,36 @@
   "data": {
     "name": "Admin",
     "permissions": [
-      "MANAGE_USERS",
-      "MANAGE_ROLES",
-      "MANAGE_AGENTS_LV1",
-      "MANAGE_AGENTS_LV2",
-      "MANAGE_CLIENTS",
-      "VIEW_DASHBOARD",
-      "VIEW_REPORTS"
+      "view_users",
+      "create_user",
+      "update_user",
+      "delete_user",
+      "view_roles",
+      "create_role",
+      "update_role",
+      "delete_role",
+      "manage_role_permissions",
+      "view_tickets",
+      "create_ticket",
+      "update_ticket",
+      "delete_ticket",
+      "view_detail_ticket",
+      "view_history",
+      "view_ticket_requests",
+      "create_ticket_request",
+      "update_ticket_request",
+      "delete_ticket_request",
+      "view_trips",
+      "create_trip",
+      "update_trip",
+      "delete_trip",
+      "view_detail_trips",
+      "view_tickets_agents_lv2",
+      "view_reports_agents_lv2",
+      "view_tickets_clients",
+      "view_reports_clients",
+      "submit_reviews",
+      "request_refunds"
     ]
   }
 }
@@ -209,13 +255,13 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `MANAGE_ROLE_PERMISSIONS`
 
 **Request Body:**
 
 ```json
 {
-  "permissions": ["VIEW_DASHBOARD", "VIEW_PROFILE", "MANAGE_CLIENTS"]
+  "permissions": ["view_dashboard", "view_profile", "manage_clients"]
 }
 ```
 
@@ -228,7 +274,7 @@
   "data": {
     "_id": "6817abcdef1234567890abcd",
     "roleName": "CustomRole",
-    "permissions": ["VIEW_DASHBOARD", "VIEW_PROFILE", "MANAGE_CLIENTS"],
+    "permissions": ["view_dashboard", "view_profile", "manage_clients"],
     "inherits": [],
     "createdAt": "2025-05-05T12:00:00.000Z",
     "updatedAt": "2025-05-05T12:00:00.000Z"
@@ -242,7 +288,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_ROLES`
+**Quyền cần thiết:** `MANAGE_ROLE_PERMISSIONS`
 
 **Request Body:**
 
@@ -261,7 +307,7 @@
   "data": {
     "_id": "6817abcdef1234567890abcf",
     "roleName": "CustomRole",
-    "permissions": ["VIEW_DASHBOARD", "VIEW_PROFILE"],
+    "permissions": ["view_dashboard", "view_profile"],
     "inherits": ["6817abcdef1234567890abcd", "6817abcdef1234567890abce"],
     "createdAt": "2025-05-05T12:00:00.000Z",
     "updatedAt": "2025-05-05T12:00:00.000Z"

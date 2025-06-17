@@ -60,6 +60,13 @@ export const PERMISSIONS = {
   UPDATE_USER: 'update_user',
   DELETE_USER: 'delete_user',
 
+  // Quyền role management chi tiết
+  VIEW_ROLES: 'view_roles',
+  CREATE_ROLE: 'create_role',
+  UPDATE_ROLE: 'update_role',
+  DELETE_ROLE: 'delete_role',
+  MANAGE_ROLE_PERMISSIONS: 'manage_role_permissions',
+
   // Quyền ticket chi tiết
   VIEW_TICKETS: 'view_tickets',
   CREATE_TICKET: 'create_ticket',
@@ -101,6 +108,11 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     PERMISSIONS.CREATE_USER,
     PERMISSIONS.UPDATE_USER,
     PERMISSIONS.DELETE_USER,
+    PERMISSIONS.VIEW_ROLES,
+    PERMISSIONS.CREATE_ROLE,
+    PERMISSIONS.UPDATE_ROLE,
+    PERMISSIONS.DELETE_ROLE,
+    PERMISSIONS.MANAGE_ROLE_PERMISSIONS,
     PERMISSIONS.VIEW_TICKETS,
     PERMISSIONS.CREATE_TICKET,
     PERMISSIONS.UPDATE_TICKET,
