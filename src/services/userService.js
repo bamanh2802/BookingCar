@@ -122,24 +122,38 @@ const createUser = async (userData, creatorId) => {
     )
   }
 
-  // Kiểm tra vai trò tồn tại nếu được cung cấp
-  if (userData.roleId) {
+  // Xử lý roleId/roleName
+  let roleId = userData.roleId
+  
+  if (userData.roleName) {
+    // Nếu có roleName, tìm roleId tương ứng
+    const role = await userRoleRepository.findByRoleName(userData.roleName)
+    if (!role) {
+      throw new NotFoundError(`Role with name ${userData.roleName} not found`)
+    }
+    roleId = role._id
+  } else if (userData.roleId) {
+    // Nếu có roleId, kiểm tra vai trò tồn tại
     const roleExists = await userRoleRepository.findById(userData.roleId)
     if (!roleExists) {
       throw new NotFoundError(`Role with ID ${userData.roleId} not found`)
     }
   } else {
-    // Nếu không có roleId, lấy vai trò Client làm mặc định
+    // Nếu không có cả hai, lấy vai trò Client làm mặc định
     const clientRole = await userRoleRepository.findByRoleName(USER_ROLES.CLIENT)
     if (!clientRole) {
       throw new Error('Default client role not found. Please initialize roles first.')
     }
-    userData.roleId = clientRole._id
+    roleId = clientRole._id
   }
 
   // Tạo người dùng mới với thông tin người tạo
   const user = await userRepository.create({
-    ...userData,
+    email: userData.email,
+    password: userData.password,
+    fullName: userData.fullName,
+    phone: userData.phone,
+    roleId: roleId,
     parentId: creatorId
   })
 

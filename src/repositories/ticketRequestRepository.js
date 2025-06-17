@@ -1,3 +1,4 @@
+import { Types } from 'mongoose'
 import BaseRepository from './baseRepository.js'
 import { ticketRequestModel } from '~/models/ticketRequestModel.js'
 
@@ -18,7 +19,47 @@ class TicketRequestRepository extends BaseRepository {
    * @param {String} ticketRequestId - ID của yêu cầu vé
    */
   async findTicketRequestById(ticketRequestId) {
-    return this.findOne({ _id: ticketRequestId })
+    const pipeline = [
+      { $match: { _id: new Types.ObjectId(ticketRequestId) } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      { $unwind: '$userInfo' },
+      {
+        $lookup: {
+          from: 'trips',
+          localField: 'tripId',
+          foreignField: '_id',
+          as: 'tripInfo'
+        }
+      },
+      { $unwind: '$tripInfo' },
+      {
+        $lookup: {
+          from: 'carcompanies',
+          localField: 'tripInfo.carCompanyId',
+          foreignField: '_id',
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: '$carCompanyInfo' },
+      {
+        $project: {
+          'userInfo.password': 0,
+          'carCompanyInfo.seatMap': 0
+        }
+      }
+    ]
+
+    const result = await this.model.aggregate(pipeline)
+
+    // Vì chỉ truy vấn 1 ticketRequest theo id → nên lấy phần tử đầu tiên
+    return result[0] || []
   }
 
   /**

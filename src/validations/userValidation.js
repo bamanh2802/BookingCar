@@ -1,4 +1,4 @@
-import { loginSchema, registerSchema, updateUserSchema } from './schemas/userSchema'
+import { loginSchema, registerSchema, updateUserSchema, createUserSchema } from './schemas/userSchema'
 import { validateRequest } from './validateRequest'
 
 /**
@@ -16,8 +16,14 @@ const login = validateRequest(loginSchema)
  */
 const updateProfile = validateRequest(updateUserSchema)
 
+/**
+ * Middleware validation cho tạo người dùng bởi Admin/Đại lý
+ */
+const createUser = validateRequest(createUserSchema)
+
 export const userValidation = {
   register,
   login,
-  updateProfile
+  updateProfile,
+  createUser
 }

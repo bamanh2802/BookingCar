@@ -6,12 +6,21 @@ import mongoose from 'mongoose'
 import carCompanyRepository from '~/repositories/carCompanyRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
 import ticketService from './ticketService'
-import { TICKET_STATUS } from '~/constants'
+import { TICKET_STATUS, USER_ROLES } from '~/constants'
+import userRepository from '~/repositories/userRepository'
 /**
  * Tạo yêu cầu vé mới
  */
 
-const createTicketRequest = async (ticketRequest) => {
+const createTicketRequest = async (ticketRequest, currentUser) => {
+  //Kiểm tra xem người dùng có tồn tại hay không
+  const user = await userRepository.findById(ticketRequest.userId)
+  if (!user) throw new ConflictError('Người dùng này không tồn tại')
+
+  if (currentUser.roleName !== USER_ROLES.CLIENT && String(currentUser._id) !== String(user._id)) {
+    ticketRequest.createdBy = currentUser._id
+  }
+
   //Kiểm tra xem chuyến đi có tồn tại không
   const trip = await tripRespository.findTripById(ticketRequest.tripId)
   if (!trip) {
@@ -125,19 +134,28 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       const seatMap = await seatMapRepository.findByTripId(ticketRequest.tripId)
       if (!seatMap) throw new NotFoundError('Seat map không tồn tại cho chuyến đi này')
 
+      // Kiểm tra trùng ghế (tối ưu bằng Set)
+      const requestedSeats = updateData.seats || ticketRequest.seats || []
+      const existedSeatSet = new Set((seatMap.seats || []).map((seat) => `${seat.code}_${seat.floor}`))
+      const duplicated = requestedSeats.find((seat) => existedSeatSet.has(`${seat.code}_${seat.floor}`))
+      if (duplicated) {
+        await ticketRequestRepository.deleteTicketRequest(ticketRequestId)
+        throw new ConflictError(`Ghế đã tồn tại: code=${duplicated.code}, floor=${duplicated.floor}`)
+      }
+
       const updatedSeatMap = await seatMapRepository.updateSeatMap(
         seatMap._id,
         {
           $push: {
             seats: {
-              $each: ticketRequest.seats.map((seat) => ({
+              $each: requestedSeats.map((seat) => ({
                 code: seat.code,
                 floor: seat.floor
               }))
             }
           },
           $inc: {
-            totalBookedSeats: ticketRequest.seats.length
+            totalBookedSeats: requestedSeats.length
           }
         },
         { session }
@@ -154,7 +172,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
           tripId: ticketRequest.tripId,
           requestId: ticketRequest._id,
           status: TICKET_STATUS.CONFIRMED,
-          seats: ticketRequest.seats,
+          seats: requestedSeats,
           type: ticketRequest.type
         },
         { session }
@@ -166,7 +184,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       })
 
       //Cập nhật lại số ghế còn lại của chuyến đi
-      await trip.updateAvailableSeats(ticketRequest.seats.length)
+      await trip.updateAvailableSeats(requestedSeats.length)
 
       // Lưu các thay đổi trong phiên giao dịch
       await session.commitTransaction()

@@ -192,7 +192,7 @@
 
 **Authentication:** Bearer Token
 
-**Quyền cần thiết:** `MANAGE_USERS`, `MANAGE_AGENTS_LV2`, hoặc `MANAGE_CLIENTS`
+**Quyền cần thiết:** `CREATE_USER`
 
 **Request Body:**
 
@@ -202,9 +202,21 @@
   "password": "Abc123!@#",
   "fullName": "Người dùng mới",
   "phone": "0912345678",
-  "roleId": "6817abcdef1234567890abce"
+  "roleName": "Client"
 }
 ```
+
+**Lưu ý về Role:**
+- Có thể sử dụng `roleName` (khuyến nghị) hoặc `roleId`
+- Nếu cung cấp cả hai, `roleName` sẽ được ưu tiên
+- Các giá trị `roleName` hợp lệ: `Admin`, `AgentLv1`, `AgentLv2`, `Client`
+- Nếu không cung cấp role nào, mặc định sẽ là `Client`
+
+**Mô tả các Role:**
+- `Admin`: Quản trị viên hệ thống - có toàn quyền
+- `AgentLv1`: Đại lý cấp 1 - có thể tạo AgentLv2 và Client
+- `AgentLv2`: Đại lý cấp 2 - có thể tạo Client
+- `Client`: Khách hàng - người dùng cuối
 
 **Response (201):**
 

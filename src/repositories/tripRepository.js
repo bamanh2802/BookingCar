@@ -1,5 +1,6 @@
 import { tripModel } from '~/models/tripModel'
 import BaseRepository from './baseRepository'
+import { Types } from 'mongoose'
 
 class TripRespository extends BaseRepository {
   constructor() {
@@ -11,7 +12,60 @@ class TripRespository extends BaseRepository {
    * @param {String} tripId - ID của chuyến đi
    */
   async findTripById(tripId) {
-    return this.findOne({ _id: tripId })
+    return this.findById(tripId)
+  }
+
+  /**
+   * * Lấy thông tin chi tiết chuyến đi theo ID
+   * @param {String} tripId - ID của chuyến đi
+   */
+  async findDetailTripById(id) {
+    const pipeline = [
+      { $match: { _id: new Types.ObjectId(id) } },
+
+      // Join carcompanies và chỉ lấy các trường cần thiết
+      {
+        $lookup: {
+          from: 'carcompanies',
+          let: { carCompanyId: '$carCompanyId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$_id', '$$carCompanyId'] }
+              }
+            }
+          ],
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: '$carCompanyInfo' },
+
+      // Join seatmaps và chỉ lấy các trường cần thiết
+      {
+        $lookup: {
+          from: 'seatmaps',
+          let: { seatMapId: '$seatMapId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$_id', '$$seatMapId'] }
+              }
+            },
+            {
+              $project: {
+                seats: 1,
+                totalBookedSeats: 1
+              }
+            }
+          ],
+          as: 'bookedSeats'
+        }
+      },
+      { $unwind: '$bookedSeats' }
+    ]
+
+    const result = await this.model.aggregate(pipeline)
+    return result[0] || null
   }
 
   /**

@@ -27,7 +27,7 @@ const getTickets = async (filter = {}, page = 1, limit = 10) => {
  * Lấy vé theo ID
  */
 const getTicketById = async (ticketId) => {
-  const ticket = await ticketRepository.findTicketById(ticketId)
+  const ticket = await ticketRepository.getTicketDetail(ticketId)
   if (!ticket) {
     throw new Error('Vé không tồn tại')
   }
@@ -92,18 +92,6 @@ const getTicketsByTripId = async (tripId, page = 1, limit = 10) => {
 }
 
 /**
- * Lấy vé theo ID người dùng và ID vé
- */
-const getTicketByUserIdAndTicketId = async (userId, ticketId) => {
-  // Lấy vé theo ID người dùng và ID vé
-  const ticket = await ticketRepository.findTicketByUserIdAndTicketId(userId, ticketId)
-  if (!ticket) {
-    throw new Error('Không tìm thấy vé cho người dùng này')
-  }
-  return ticket
-}
-
-/**
  * Lấy vé theo ID nguời dùng và ID chuyến đi
  */
 const getTicketByUserIdAndTripId = async (userId, tripId) => {
@@ -122,6 +110,5 @@ export default {
   deleteTicket,
   getTicketsByUserId,
   getTicketsByTripId,
-  getTicketByUserIdAndTicketId,
   getTicketByUserIdAndTripId
 }

@@ -26,7 +26,7 @@ const getTrips = async (day = new Date(), page, limit) => {
  * Lấy thông tin chuyến đi theo ID
  */
 const getTripById = async (tripId) => {
-  const trip = await tripRespository.findById(tripId)
+  const trip = await tripRespository.findDetailTripById(tripId)
   if (!trip) {
     throw new ConflictError('Chuyến đi không tồn tại')
   }

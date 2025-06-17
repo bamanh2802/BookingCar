@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
+import { PERMISSIONS } from '~/constants'
 import { userRoleService } from '~/services/userRoleService'
 import ApiResponse from '~/utils/ApiResponse'
 import { catchAsync } from '~/utils/catchAsync'
@@ -108,6 +109,21 @@ const getRolePermissions = catchAsync(async (req, res) => {
   )
 })
 
+/**
+ * Lấy danh sách tất cả quyền có sẵn trong hệ thống
+ */
+const getAllPermissions = catchAsync(async (req, res) => {
+  const availablePermissions = Object.values(PERMISSIONS)
+  res.status(StatusCodes.OK).json(
+    ApiResponse.success({
+      message: 'Lấy danh sách quyền thành công',
+      data: {
+        availablePermissions
+      }
+    })
+  )
+})
+
 export const userRoleController = {
   createRole,
   getAllRoles,
@@ -116,5 +132,6 @@ export const userRoleController = {
   updateRolePermissions,
   updateRoleInherits,
   deleteRole,
-  getRolePermissions
+  getRolePermissions,
+  getAllPermissions
 }

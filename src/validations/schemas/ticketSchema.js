@@ -22,10 +22,10 @@ const ticketSchema = Joi.object({
   }),
 
   status: Joi.string()
-    .valid(TICKET_STATUS.PENDING, TICKET_STATUS.PAID)
+    .valid(TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED)
     .default(TICKET_STATUS.PENDING)
     .messages({
-      'any.only': `Status must be  ${TICKET_STATUS.PENDING} or ${TICKET_STATUS.PAID}`
+      'any.only': `Status must be  ${TICKET_STATUS.PENDING} or ${TICKET_STATUS.CONFIRMED}`
     }),
 
   seats: Joi.array()
@@ -61,7 +61,7 @@ const ticketSchema = Joi.object({
 
 const ticketUpdateSchema = Joi.object({
   status: Joi.string()
-    .valid(TICKET_STATUS.PENDING, TICKET_STATUS.PAID, TICKET_STATUS.CANCELLED, TICKET_STATUS.REFUNDED)
+    .valid(TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED, TICKET_STATUS.CANCELLED, TICKET_STATUS.REFUNDED)
     .messages({
       'any.only': `Status must be one of ${TICKET_STATUS.PENDING}, ${TICKET_STATUS.PAID}, ${TICKET_STATUS.CANCELLED}, ${TICKET_STATUS.REFUNDED}`
     }),
