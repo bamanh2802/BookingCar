@@ -11,7 +11,8 @@ import { dayRangeUTC, toUTC } from '~/utils/timeTranfer'
  */
 const getTrips = async (reqQuery) => {
   const { startLocation, endLocation, day, page, limit } = reqQuery
-  const { startOfDay, endOfDay } = dayRangeUTC(day)
+  const { startOfDay, endOfDay } = dayRangeUTC(new Date(day))
+  console.log(day)
   const query = {
     startTime: { $gte: startOfDay, $lte: endOfDay },
     ...(startLocation ? { startLocation } : {}),
