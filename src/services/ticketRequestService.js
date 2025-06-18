@@ -38,15 +38,6 @@ const createTicketRequest = async (ticketRequest, currentUser) => {
     throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
   }
 
-  // Kiểm tra xem yêu cầu vé đã tồn tại chưa
-  const existingTicketRequest = await ticketRequestRepository.findTicketRequestByUserIdAndTripId(
-    ticketRequest.userId,
-    ticketRequest.tripId
-  )
-  if (existingTicketRequest) {
-    throw new ConflictError('Yêu cầu vé đã tồn tại cho chuyến đi này')
-  }
-
   // Tạo yêu cầu vé mới
   const newTicketRequest = await ticketRequestRepository.createTicketRequest(ticketRequest)
   return newTicketRequest
