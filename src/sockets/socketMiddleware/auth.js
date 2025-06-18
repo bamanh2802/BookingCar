@@ -9,7 +9,7 @@ export const socketAuthMiddleware = catchAsync(async (socket, next) => {
   if (!token) next(new AuthenticationError('Token không tồn tại'))
 
   try {
-    const decoded = await jwtProvider(token, env.ACCESS_TOKEN_SECRET_KEY)
+    const decoded = await jwtProvider.verifyToken(token, env.ACCESS_TOKEN_SECRET_KEY)
 
     socket.user = decoded
     next()
