@@ -30,7 +30,7 @@ Router.route('/:ticketId')
   )
   .patch(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.UPDATE_TICKET),
+    authMiddleware.checkUpdateOrCancelTicket,
     ticketValidation.updateTicket,
     ticketController.updateTicket
   )
@@ -67,15 +67,5 @@ Router.route('/:userId/:tripId').get(
   authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKETS),
   ticketController.getTicketsByUserIdAndTripId
 )
-
-// /**
-//  * Huỷ vé
-//  */
-// Router.route('/cancel-ticket').patch(
-//   authMiddleware.authenticate,
-//   authMiddleware.hasPermission(PERMISSIONS.UPDATE_TICKET),
-//   ticketValidation.updateTicket,
-//   ticketController.updateTicket
-// )
 
 export const ticketRoutes = Router
