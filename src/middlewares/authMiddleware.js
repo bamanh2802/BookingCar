@@ -5,6 +5,7 @@ import userRoleRepository from '~/repositories/userRoleRepository'
 import { catchAsync } from '~/utils/catchAsync'
 import { AuthenticationError } from '~/utils/errors'
 import ticketRequestRepository from '~/repositories/ticketRequestRepository'
+import { TICKET_STATUS, PERMISSIONS } from '~/constants'
 
 /**
  * Middleware kiểm tra người dùng đã đăng nhập chưa
@@ -245,6 +246,18 @@ const checkViewTicketRequestById = catchAsync(async (req, res, next) => {
   next()
 })
 
+/**
+ * Middleware kiểm tra quyền update/cancel ticket
+ * Nếu status là CANCELLED thì chỉ cần authenticate, ngược lại phải có quyền UPDATE_TICKET
+ */
+const checkUpdateOrCancelTicket = (req, res, next) => {
+  const { status } = req.body
+  if (status === TICKET_STATUS.CANCELLED) {
+    return next()
+  }
+  return authMiddleware.hasPermission(PERMISSIONS.UPDATE_TICKET)(req, res, next)
+}
+
 export const authMiddleware = {
   authenticate,
   restrictTo,
@@ -252,5 +265,6 @@ export const authMiddleware = {
   canManageUser,
   checkViewTicketByUserId,
   checkViewTripByUserRole,
-  checkViewTicketRequestById
+  checkViewTicketRequestById,
+  checkUpdateOrCancelTicket
 }

@@ -1,5 +1,7 @@
 import ticketRepository from '~/repositories/ticketRepository'
+import tripRespository from '~/repositories/tripRepository'
 import { ConflictError } from '~/utils/errors'
+import { toUTC } from '~/utils/timeTranfer'
 
 /**
  * Tạo mới vé
@@ -40,10 +42,15 @@ const getTicketById = async (ticketId) => {
 
 const updateTicket = async (ticketId, updateData) => {
   // Kiểm tra xem vé có tồn tại không
-  const ticketExists = await ticketRepository.exists(ticketId)
+  const ticketExists = await ticketRepository.findTicketById(ticketId)
   if (!ticketExists) {
     throw new Error('Vé không tồn tại')
   }
+
+  const trip = await tripRespository.findTripById(ticketExists.tripId)
+  const currentTime = new Date()
+  if (toUTC(currentTime) > trip.startTime)
+    throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
 
   // Cập nhật vé
   const updatedTicket = await ticketRepository.updateTicket(ticketId, updateData)
