@@ -108,15 +108,19 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
     throw new NotFoundError('Yêu cầu vé không tồn tại')
   }
 
+  // Kiểm tra thời gian hợp lệ trước khi update
+  const trip = await tripRespository.findTripById(ticketRequest.tripId)
+  if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
+  const currentTime = new Date()
+  if (toUTC(currentTime) > trip.startTime) {
+    throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
+  }
+
   // Nếu xác nhận, tạo mới vé và seatMap trong transaction
   if (updateData.status === TICKET_STATUS.CONFIRMED && updateData.titleRequest === TITLE_TICKET_REQUESTS.BOOK_TICKET) {
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
-      // Lấy thông tin chuyến đi
-      const trip = await tripRespository.findTripById(ticketRequest.tripId)
-      if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
-
       // Lấy thông tin hãng xe
       const carCompany = await carCompanyRepository.findOne({ _id: trip.carCompanyId })
       if (!carCompany) throw new NotFoundError('Hãng xe không tồn tại')
@@ -190,6 +194,23 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       session.endSession()
       throw err
     }
+  } else if (
+    updateData.status === TICKET_STATUS.CANCELLED &&
+    updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET
+  ) {
+    // Trường hợp huỷ vé
+    // Tìm vé
+    const ticket = await ticketService.getTicketByUserIdAndTripId(ticketRequest.userId, ticketRequest.tripId)
+    if (ticket) {
+      // Gọi updateTicket để xử lý huỷ vé và cập nhật seatMap, trip
+      await ticketService.updateTicket(ticket._id, {
+        status: TICKET_STATUS.CANCELLED,
+        seats: updateData.seats,
+        titleRequest: TITLE_TICKET_REQUESTS.CANCEL_TICKET
+      })
+    }
+    // Cập nhật trạng thái ticketRequest
+    return await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData)
   } else {
     // Nếu không phải xác nhận, chỉ update bình thường
     // Kiểm tra đã có vé chưa

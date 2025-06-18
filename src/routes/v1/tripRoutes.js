@@ -10,7 +10,7 @@ Router.route('/')
   .get(authMiddleware.authenticate, tripController.getTrips)
   .post(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROUTES),
+    authMiddleware.hasPermission(PERMISSIONS.CREATE_TRIP),
     tripValidation.createTrip,
     tripController.createTrip
   )
@@ -23,14 +23,10 @@ Router.route('/:tripId')
   )
   .patch(
     authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROUTES),
+    authMiddleware.hasPermission(PERMISSIONS.UPDATE_TRIP),
     tripValidation.updateTrip,
     tripController.updateTrip
   )
-  .delete(
-    authMiddleware.authenticate,
-    authMiddleware.hasPermission(PERMISSIONS.MANAGE_ROUTES),
-    tripController.deleteTrip
-  )
+  .delete(authMiddleware.authenticate, authMiddleware.hasPermission(PERMISSIONS.DELETE_TRIP), tripController.deleteTrip)
 
 export const tripRoutes = Router
