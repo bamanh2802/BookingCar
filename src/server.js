@@ -10,6 +10,7 @@ import { API_V1 } from '~/routes/v1'
 import { initializeRolesAndAdmin } from '~/scripts/initRoles'
 import logger from '~/utils/logger'
 import { corsOptions } from './config/cors'
+import { initialSocketServer } from './sockets'
 
 // Biến toàn cục để lưu instance server
 let server
@@ -72,6 +73,9 @@ const START_SERVER = async () => {
     server = app.listen(env.APP_PORT, env.APP_HOST, () => {
       logger.info(`App listening at http://${env.APP_HOST}:${env.APP_PORT}/`)
     })
+
+    //socketIO
+    initialSocketServer(server)
 
     // Xử lý unhandled rejection
     setupErrorHandlers()

@@ -9,16 +9,16 @@ import { dayRangeUTC, toUTC } from '~/utils/timeTranfer'
 /**
  * Lấy danh sách chuyến đi theo ngày hiện tại
  */
-const getTrips = async (day = new Date(), page, limit) => {
+const getTrips = async (reqQuery) => {
+  const { startLocation, endLocation, day, page, limit } = reqQuery
   const { startOfDay, endOfDay } = dayRangeUTC(day)
+  const query = {
+    startTime: { $gte: startOfDay, $lte: endOfDay },
+    ...(startLocation ? { startLocation } : {}),
+    ...(endLocation ? { endLocation } : {})
+  }
 
-  const trips = await tripRespository.findAllWithPagination(
-    {
-      startTime: { $gte: startOfDay, $lte: endOfDay }
-    },
-    page,
-    limit
-  )
+  const trips = await tripRespository.findAllWithPagination(query, page, limit)
   return trips
 }
 
