@@ -142,9 +142,6 @@ const getTicketsByTripId = async (tripId, page = 1, limit = 10) => {
  */
 const getTicketByUserIdAndTripId = async (userId, tripId) => {
   const ticket = await ticketRepository.findTicketByUserIdAndTripId(userId, tripId)
-  if (!ticket) {
-    throw new Error('Không tìm thấy vé cho người dùng và chuyến đi này')
-  }
   return ticket
 }
 

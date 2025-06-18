@@ -67,7 +67,9 @@ export const ticketRequestUpdateSchema = Joi.object({
   status: Joi.string().valid(TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED, TICKET_STATUS.CANCELLED).messages({
     'any.only': 'Status must be one of PENDING, CONFIRMED, CANCELLED'
   }),
-
+  titleRequest: Joi.string().valid(TITLE_TICKET_REQUESTS.BOOK_TICKET, TITLE_TICKET_REQUESTS.CANCEL_TICKET).messages({
+    'any.only': 'Status must be one of BOOK TICKET, CANCEL TICKET'
+  }),
   seats: Joi.array()
     .items(
       Joi.object({
