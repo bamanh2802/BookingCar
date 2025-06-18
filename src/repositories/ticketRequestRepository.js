@@ -23,15 +23,6 @@ class TicketRequestRepository extends BaseRepository {
       { $match: { _id: new Types.ObjectId(ticketRequestId) } },
       {
         $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'userInfo'
-        }
-      },
-      { $unwind: '$userInfo' },
-      {
-        $lookup: {
           from: 'trips',
           localField: 'tripId',
           foreignField: '_id',
@@ -50,7 +41,6 @@ class TicketRequestRepository extends BaseRepository {
       { $unwind: '$carCompanyInfo' },
       {
         $project: {
-          'userInfo.password': 0,
           'carCompanyInfo.seatMap': 0
         }
       }

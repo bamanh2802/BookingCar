@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { CAR_TYPES, TICKET_STATUS } from '~/constants'
+import { CAR_TYPES, TICKET_STATUS, TITLE_TICKET_REQUESTS, VALIDATION_RULES } from '~/constants'
 
 /**
  * Schema validation for ticket request
@@ -19,7 +19,9 @@ export const ticketRequestSchema = Joi.object({
   status: Joi.string().valid(TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED).default(TICKET_STATUS.PENDING).messages({
     'any.only': 'Status must be one of PENDING, CONFIRMED'
   }),
-
+  titleRequest: Joi.string().valid(TITLE_TICKET_REQUESTS.BOOK_TICKET, TITLE_TICKET_REQUESTS.CANCEL_TICKET).messages({
+    'any.only': 'Status must be one of BOOK TICKET, CANCEL TICKET'
+  }),
   seats: Joi.array()
     .items(
       Joi.object({
@@ -37,6 +39,23 @@ export const ticketRequestSchema = Joi.object({
     .messages({
       'array.base': 'Seats must be an array'
     }),
+  passengerName: Joi.string()
+    .required()
+    .min(VALIDATION_RULES.FULLNAME_MIN_LENGTH)
+    .max(VALIDATION_RULES.FULLNAME_MAX_LENGTH)
+    .trim()
+    .messages({
+      'string.empty': 'Họ tên không được để trống',
+      'string.min': `Họ tên phải có ít nhất ${VALIDATION_RULES.FULLNAME_MIN_LENGTH} ký tự`,
+      'string.max': `Họ tên không được vượt quá ${VALIDATION_RULES.FULLNAME_MAX_LENGTH} ký tự`,
+      'any.required': 'Họ tên là trường bắt buộc'
+    }),
+
+  passengerPhone: Joi.string().required().pattern(VALIDATION_RULES.PHONE_NUMBER_RULE).messages({
+    'string.empty': 'Số điện thoại không được để trống',
+    'string.pattern.base': 'Số điện thoại không hợp lệ',
+    'any.required': 'Số điện thoại là trường bắt buộc'
+  }),
 
   type: Joi.string().valid(CAR_TYPES.REGULAR, CAR_TYPES.VIP).required().messages({
     'any.only': 'Type must be either REGULAR or VIP',
@@ -63,6 +82,9 @@ export const ticketRequestUpdateSchema = Joi.object({
     .messages({
       'array.base': 'Seats must be an array'
     }),
+  passengerName: Joi.string(),
+
+  passengerPhone: Joi.string(),
 
   type: Joi.string().valid(CAR_TYPES.REGULAR, CAR_TYPES.VIP).messages({
     'any.only': 'Type must be either REGULAR or VIP'

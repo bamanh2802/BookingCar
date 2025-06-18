@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
-import { CAR_TYPES, DOCUMENT_NAMES, TICKET_STATUS } from '~/constants'
+import { CAR_TYPES, DOCUMENT_NAMES, TICKET_STATUS, TITLE_TICKET_REQUESTS, VALIDATION_RULES } from '~/constants'
 
 const ticketRequestSchema = new Schema(
   {
@@ -13,10 +13,34 @@ const ticketRequestSchema = new Schema(
       ref: DOCUMENT_NAMES.TRIP,
       required: true
     },
+    titleRequest: {
+      type: String,
+      enum: [TITLE_TICKET_REQUESTS.BOOK_TICKET, TITLE_TICKET_REQUESTS.CANCEL_TICKET],
+      required: true
+    },
     status: {
       type: String,
       enum: [TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED, TICKET_STATUS.CANCELLED],
       default: TICKET_STATUS.PENDING
+    },
+    passengerName: {
+      type: String,
+      required: [true, 'Fullname is required'],
+      trim: true,
+      maxlength: [
+        VALIDATION_RULES.FULLNAME_MAX_LENGTH,
+        `Full name cannot exceed ${VALIDATION_RULES.FULLNAME_MAX_LENGTH} characters`
+      ],
+      minLength: [
+        VALIDATION_RULES.FULLNAME_MIN_LENGTH,
+        `Fullname must be at least ${VALIDATION_RULES.FULLNAME_MIN_LENGTH} characters long`
+      ]
+    },
+    passengerPhone: {
+      type: String,
+      required: [true, 'Phone number is required'],
+      trim: true,
+      match: [VALIDATION_RULES.PHONE_NUMBER_RULE, 'Invalid phone number format']
     },
     seats: {
       _id: false,

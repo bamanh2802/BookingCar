@@ -1,7 +1,10 @@
+import { TICKET_STATUS } from '~/constants'
 import ticketRepository from '~/repositories/ticketRepository'
 import tripRespository from '~/repositories/tripRepository'
+import seatMapRepository from '~/repositories/seatMapRepository'
 import { ConflictError } from '~/utils/errors'
 import { toUTC } from '~/utils/timeTranfer'
+import mongoose from 'mongoose'
 
 /**
  * Tạo mới vé
@@ -52,6 +55,42 @@ const updateTicket = async (ticketId, updateData) => {
   if (toUTC(currentTime) > trip.startTime)
     throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
 
+  if (updateData.status === TICKET_STATUS.CANCELLED && !!updateData.seats) {
+    // Bắt đầu transaction
+    const session = await mongoose.startSession()
+    session.startTransaction()
+    try {
+      // Lấy seatMap theo tripId
+      const seatMap = await seatMapRepository.findByTripId(trip._id)
+      if (!seatMap) throw new Error('Seat map không tồn tại cho chuyến đi này')
+      const seatsToRemove = updateData.seats
+      // Xoá ghế khỏi seatMap bằng $pull
+      await seatMapRepository.updateSeatMap(
+        seatMap._id,
+        {
+          $pull: {
+            seats: { $or: seatsToRemove.map((seat) => ({ code: seat.code, floor: seat.floor })) }
+          },
+          $inc: { totalBookedSeats: -seatsToRemove.length }
+        },
+        { session }
+      )
+      // Tăng availableSeats của trip bằng $inc
+      await tripRespository.updateTrip(trip._id, { $inc: { availableSeats: seatsToRemove.length } }, { session })
+      // Cập nhật vé sang trạng thái huỷ
+      const updatedTicket = await ticketRepository.updateTicket(ticketId, updateData, { session })
+      if (!updatedTicket) {
+        throw new Error('Cập nhật vé không thành công')
+      }
+      await session.commitTransaction()
+      session.endSession()
+      return updatedTicket
+    } catch (err) {
+      await session.abortTransaction()
+      session.endSession()
+      throw err
+    }
+  }
   // Cập nhật vé
   const updatedTicket = await ticketRepository.updateTicket(ticketId, updateData)
   if (!updatedTicket) {
