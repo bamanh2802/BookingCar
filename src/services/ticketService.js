@@ -1,4 +1,4 @@
-import { TICKET_STATUS } from '~/constants'
+import { TICKET_STATUS, TITLE_TICKET_REQUESTS } from '~/constants'
 import ticketRepository from '~/repositories/ticketRepository'
 import tripRespository from '~/repositories/tripRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
@@ -55,7 +55,11 @@ const updateTicket = async (ticketId, updateData) => {
   if (toUTC(currentTime) > trip.startTime)
     throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
 
-  if (updateData.status === TICKET_STATUS.CANCELLED && !!updateData.seats) {
+  if (
+    updateData.status === TICKET_STATUS.CANCELLED &&
+    !!updateData.seats &&
+    updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET
+  ) {
     // Bắt đầu transaction
     const session = await mongoose.startSession()
     session.startTransaction()
@@ -64,12 +68,17 @@ const updateTicket = async (ticketId, updateData) => {
       const seatMap = await seatMapRepository.findByTripId(trip._id)
       if (!seatMap) throw new Error('Seat map không tồn tại cho chuyến đi này')
       const seatsToRemove = updateData.seats
-      // Xoá ghế khỏi seatMap bằng $pull
+      // Xoá ghế khỏi seatMap bằng $pull (so sánh đúng kiểu dữ liệu)
       await seatMapRepository.updateSeatMap(
         seatMap._id,
         {
           $pull: {
-            seats: { $or: seatsToRemove.map((seat) => ({ code: seat.code, floor: seat.floor })) }
+            seats: {
+              $or: seatsToRemove.map((seat) => ({
+                code: String(seat.code),
+                floor: Number(seat.floor)
+              }))
+            }
           },
           $inc: { totalBookedSeats: -seatsToRemove.length }
         },
@@ -77,8 +86,23 @@ const updateTicket = async (ticketId, updateData) => {
       )
       // Tăng availableSeats của trip bằng $inc
       await tripRespository.updateTrip(trip._id, { $inc: { availableSeats: seatsToRemove.length } }, { session })
-      // Cập nhật vé sang trạng thái huỷ
-      const updatedTicket = await ticketRepository.updateTicket(ticketId, updateData, { session })
+      // Cập nhật vé: loại bỏ các ghế đã huỷ khỏi ticket.seats (so sánh đúng kiểu dữ liệu)
+      const newSeats = (ticketExists.seats || []).filter(
+        (seat) =>
+          !seatsToRemove.some(
+            (removeSeat) =>
+              String(seat.code) === String(removeSeat.code) && Number(seat.floor) === Number(removeSeat.floor)
+          )
+      )
+      // Nếu vẫn còn ghế sau khi huỷ, chỉ cập nhật lại mảng seats và giữ nguyên status cũ
+      // Nếu không còn ghế thì set status = CANCELLED
+      const ticketUpdateData = {
+        seats: newSeats
+      }
+      if (newSeats.length === 0) {
+        ticketUpdateData.status = TICKET_STATUS.CANCELLED
+      }
+      const updatedTicket = await ticketRepository.updateTicket(ticketId, ticketUpdateData, { session })
       if (!updatedTicket) {
         throw new Error('Cập nhật vé không thành công')
       }
@@ -142,9 +166,6 @@ const getTicketsByTripId = async (tripId, page = 1, limit = 10) => {
  */
 const getTicketByUserIdAndTripId = async (userId, tripId) => {
   const ticket = await ticketRepository.findTicketByUserIdAndTripId(userId, tripId)
-  if (!ticket) {
-    throw new Error('Không tìm thấy vé cho người dùng và chuyến đi này')
-  }
   return ticket
 }
 

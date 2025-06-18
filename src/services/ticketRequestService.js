@@ -108,15 +108,19 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
     throw new NotFoundError('Yêu cầu vé không tồn tại')
   }
 
+  // Kiểm tra thời gian hợp lệ trước khi update
+  const trip = await tripRespository.findTripById(ticketRequest.tripId)
+  if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
+  const currentTime = new Date()
+  if (toUTC(currentTime) > trip.startTime) {
+    throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
+  }
+
   // Nếu xác nhận, tạo mới vé và seatMap trong transaction
   if (updateData.status === TICKET_STATUS.CONFIRMED && updateData.titleRequest === TITLE_TICKET_REQUESTS.BOOK_TICKET) {
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
-      // Lấy thông tin chuyến đi
-      const trip = await tripRespository.findTripById(ticketRequest.tripId)
-      if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
-
       // Lấy thông tin hãng xe
       const carCompany = await carCompanyRepository.findOne({ _id: trip.carCompanyId })
       if (!carCompany) throw new NotFoundError('Hãng xe không tồn tại')
@@ -130,7 +134,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       const existedSeatSet = new Set((seatMap.seats || []).map((seat) => `${seat.code}_${seat.floor}`))
       const duplicated = requestedSeats.find((seat) => existedSeatSet.has(`${seat.code}_${seat.floor}`))
       if (duplicated) {
-        await ticketRequestRepository.deleteTicketRequest(ticketRequestId, { session })
+        await ticketRequestRepository.deleteTicketRequest(ticketRequestId)
         throw new ConflictError(`Ghế đã tồn tại: code=${duplicated.code}, floor=${duplicated.floor}`)
       }
 
@@ -170,7 +174,6 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
         },
         { session }
       )
-
       // Cập nhật thông tin yêu cầu vé
       const updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData, {
         session
@@ -179,8 +182,8 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       //Cập nhật lại số ghế còn lại của chuyến đi
       await trip.updateAvailableSeats(requestedSeats.length)
 
-      //xoá request sau khi cập nhật
-      await ticketRequestRepository.deleteTicketRequest(ticketRequestId)
+      // //xoá request sau khi cập nhật
+      // await ticketRequestRepository.deleteTicketRequest(ticketRequestId)
 
       // Lưu các thay đổi trong phiên giao dịch
       await session.commitTransaction()
@@ -191,9 +194,106 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       session.endSession()
       throw err
     }
+  } else if (
+    updateData.status === TICKET_STATUS.CANCELLED &&
+    updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET
+  ) {
+    // Trường hợp huỷ vé
+    // Tìm vé
+    const ticket = await ticketService.getTicketByUserIdAndTripId(ticketRequest.userId, ticketRequest.tripId)
+    if (ticket) {
+      // Gọi updateTicket để xử lý huỷ vé và cập nhật seatMap, trip
+      await ticketService.updateTicket(ticket._id, {
+        status: TICKET_STATUS.CANCELLED,
+        seats: updateData.seats,
+        titleRequest: TITLE_TICKET_REQUESTS.CANCEL_TICKET
+      })
+    }
+    // Cập nhật trạng thái ticketRequest
+    return await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData)
   } else {
     // Nếu không phải xác nhận, chỉ update bình thường
-    const updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData)
+    // Kiểm tra đã có vé chưa
+    let updatedTicketRequest
+    const ticket = await ticketService.getTicketByUserIdAndTripId(ticketRequest.userId, ticketRequest.tripId)
+    if (ticket) {
+      // Nếu có seats mới, kiểm tra số lượng và trùng ghế
+      if (updateData.seats) {
+        if (updateData.seats.length !== ticket.seats.length) {
+          throw new ConflictError('Không được phép thay đổi số lượng ghế khi đã tạo vé')
+        }
+        // Bắt đầu transaction
+        const session = await mongoose.startSession()
+        session.startTransaction()
+        try {
+          // Lấy seatMap của trip
+          const seatMap = await seatMapRepository.findByTripId(ticketRequest.tripId)
+          if (!seatMap) throw new ConflictError('Seat map không tồn tại cho chuyến đi này')
+          // Danh sách ghế đã đặt (trừ ghế cũ của vé này)
+          const oldSeatsSet = new Set(ticket.seats.map((seat) => `${seat.code}_${seat.floor}`))
+          const existedSeatSet = new Set(
+            (seatMap.seats || [])
+              .filter((seat) => !oldSeatsSet.has(`${seat.code}_${seat.floor}`))
+              .map((seat) => `${seat.code}_${seat.floor}`)
+          )
+          // Kiểm tra trùng ghế
+          const duplicated = updateData.seats.find((seat) => existedSeatSet.has(`${seat.code}_${seat.floor}`))
+          if (duplicated) {
+            throw new ConflictError(`Ghế đã tồn tại: code=${duplicated.code}, floor=${duplicated.floor}`)
+          }
+          // Cập nhật seatMap: xoá ghế cũ, thêm ghế mới
+          await seatMapRepository.updateSeatMap(
+            seatMap._id,
+            {
+              $pull: {
+                seats: { $or: ticket.seats.map((seat) => ({ code: seat.code, floor: seat.floor })) }
+              },
+              $inc: { totalBookedSeats: -ticket.seats.length }
+            },
+            { session }
+          )
+          await seatMapRepository.updateSeatMap(
+            seatMap._id,
+            {
+              $push: {
+                seats: { $each: updateData.seats }
+              },
+              $inc: { totalBookedSeats: updateData.seats.length }
+            },
+            { session }
+          )
+          await ticketService.updateTicket(ticket._id, { seats: updateData.seats }, { session })
+          // Cập nhật các thông tin cơ bản
+          const ticketUpdateData = {}
+          if (updateData.passengerName) ticketUpdateData.passengerName = updateData.passengerName
+          if (updateData.passengerPhone) ticketUpdateData.passengerPhone = updateData.passengerPhone
+          if (Object.keys(ticketUpdateData).length > 0) {
+            await ticketService.updateTicket(ticket._id, ticketUpdateData, { session })
+          }
+          updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData, {
+            session
+          })
+          await session.commitTransaction()
+          session.endSession()
+        } catch (err) {
+          await session.abortTransaction()
+          session.endSession()
+          throw err
+        }
+      } else {
+        // Không đổi ghế, chỉ cập nhật thông tin cơ bản
+        const ticketUpdateData = {}
+        if (updateData.passengerName) ticketUpdateData.passengerName = updateData.passengerName
+        if (updateData.passengerPhone) ticketUpdateData.passengerPhone = updateData.passengerPhone
+        if (Object.keys(ticketUpdateData).length > 0) {
+          await ticketService.updateTicket(ticket._id, ticketUpdateData)
+        }
+        updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData)
+      }
+    } else {
+      // Nếu không tìm thấy vé, chỉ update ticketRequest
+      updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData)
+    }
     return updatedTicketRequest
   }
 }
