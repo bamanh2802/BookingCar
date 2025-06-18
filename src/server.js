@@ -90,7 +90,7 @@ const START_SERVER = async () => {
  */
 const setupErrorHandlers = () => {
   // Xử lý unhandled promise rejections
-  process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason) => {
     logger.error('Unhandled Promise Rejection:', reason)
 
     // Trong production, gracefully shutdown để tránh mất dữ liệu
