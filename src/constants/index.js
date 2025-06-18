@@ -2,6 +2,12 @@
  * File tập trung tất cả các constants trong dự án
  */
 
+//Các tiêu đề yêu cầu
+export const TITLE_TICKET_REQUESTS = {
+  BOOK_TICKET: 'Book Ticket',
+  CANCEL_TICKET: 'Cancel ticket'
+}
+
 // Các roles của người dùng
 export const USER_ROLES = {
   ADMIN: 'Admin',

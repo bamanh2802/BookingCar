@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import carCompanyRepository from '~/repositories/carCompanyRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
 import ticketService from './ticketService'
-import { TICKET_STATUS, USER_ROLES } from '~/constants'
+import { TICKET_STATUS, TITLE_TICKET_REQUESTS, USER_ROLES } from '~/constants'
 import userRepository from '~/repositories/userRepository'
 /**
  * Tạo yêu cầu vé mới
@@ -118,7 +118,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
   }
 
   // Nếu xác nhận, tạo mới vé và seatMap trong transaction
-  if (updateData.status === TICKET_STATUS.CONFIRMED) {
+  if (updateData.status === TICKET_STATUS.CONFIRMED && updateData.titleRequest === TITLE_TICKET_REQUESTS.BOOK_TICKET) {
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
@@ -139,7 +139,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       const existedSeatSet = new Set((seatMap.seats || []).map((seat) => `${seat.code}_${seat.floor}`))
       const duplicated = requestedSeats.find((seat) => existedSeatSet.has(`${seat.code}_${seat.floor}`))
       if (duplicated) {
-        await ticketRequestRepository.deleteTicketRequest(ticketRequestId)
+        await ticketRequestRepository.deleteTicketRequest(ticketRequestId, { session })
         throw new ConflictError(`Ghế đã tồn tại: code=${duplicated.code}, floor=${duplicated.floor}`)
       }
 
@@ -173,7 +173,9 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
           requestId: ticketRequest._id,
           status: TICKET_STATUS.CONFIRMED,
           seats: requestedSeats,
-          type: ticketRequest.type
+          type: ticketRequest.type,
+          passengerName: ticketRequest.passengerName,
+          passengerPhone: ticketRequest.passengerPhone
         },
         { session }
       )
@@ -185,6 +187,9 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
 
       //Cập nhật lại số ghế còn lại của chuyến đi
       await trip.updateAvailableSeats(requestedSeats.length)
+
+      //xoá request sau khi cập nhật
+      await ticketRequestRepository.deleteTicketRequest(ticketRequestId)
 
       // Lưu các thay đổi trong phiên giao dịch
       await session.commitTransaction()
