@@ -8,6 +8,7 @@ import seatMapRepository from '~/repositories/seatMapRepository'
 import ticketService from './ticketService'
 import { TICKET_STATUS, TITLE_TICKET_REQUESTS, USER_ROLES } from '~/constants'
 import userRepository from '~/repositories/userRepository'
+import { pickTrip } from '~/utils/formatter'
 /**
  * Tạo yêu cầu vé mới
  */
@@ -51,34 +52,49 @@ const createTicketRequest = async (ticketRequest, currentUser) => {
  * @returns {Object} Danh sách yêu cầu vé và thông tin phân trang
  */
 const getTicketRequests = async (filter = {}, page = 1, limit = 10) => {
-  const result = await ticketRequestRepository.findTicketRequestsWithPagination(filter, page, limit)
-  return result
+  const { results, pagination } = await ticketRequestRepository.findTicketRequestsWithPagination(filter, page, limit)
+
+  if (!results || results.length === 0) {
+    throw new NotFoundError('Không tìm thấy yêu cầu vé ')
+  }
+
+  const mappedResults = results.map((item) => ({
+    ...item,
+    tripInfo: pickTrip(item.tripInfo)
+  }))
+  return { results: mappedResults, pagination }
 }
 
 /**
  * Lấy danh sách yêu cầu vé theo ID người dùng
  * @param {string} userId - ID của người dùng
  */
-const getTicketRequestsByUserId = async (userId) => {
-  // Kiểm tra xem người dùng có yêu cầu vé nào không
-  const ticketRequests = await ticketRequestRepository.findTicketRequestsByUserId(userId)
-  if (!ticketRequests || ticketRequests.length === 0) {
+const getTicketRequestsByUserId = async (userId, page = 1, limit = 10) => {
+  const { results, pagination } = await ticketRequestRepository.findTicketRequestsByUserId(userId, page, limit)
+  if (!results || results.length === 0) {
     throw new NotFoundError('Không tìm thấy yêu cầu vé cho người dùng này')
   }
-  return ticketRequests
+  const mappedResults = results.map((item) => ({
+    ...item,
+    tripInfo: pickTrip(item.tripInfo)
+  }))
+  return { results: mappedResults, pagination }
 }
 
 /**
  * Lấy danh sách yêu cầu vé theo ID chuyến đi
  * @param {string} tripId - ID của chuyến đi
  */
-const getTicketRequestsByTripId = async (tripId) => {
-  // Kiểm tra xem chuyến đi có yêu cầu vé nào không
-  const ticketRequests = await ticketRequestRepository.findTicketRequestsByTripId(tripId)
-  if (!ticketRequests || ticketRequests.length === 0) {
+const getTicketRequestsByTripId = async (tripId, page = 1, limit = 10) => {
+  const { results, pagination } = await ticketRequestRepository.findTicketRequestsByTripId(tripId, page, limit)
+  if (!results || results.length === 0) {
     throw new NotFoundError('Không tìm thấy yêu cầu vé cho chuyến đi này')
   }
-  return ticketRequests
+  const mappedResults = results.map((item) => ({
+    ...item,
+    tripInfo: pickTrip(item.tripInfo)
+  }))
+  return { results: mappedResults, pagination }
 }
 
 /**

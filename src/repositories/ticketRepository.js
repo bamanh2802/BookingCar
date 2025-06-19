@@ -1,7 +1,6 @@
 import { ticketModel } from '~/models/ticketModel'
 import BaseRepository from './baseRepository'
 import { Types } from 'mongoose'
-import { DOCUMENT_NAMES } from '~/constants'
 
 class TicketRequestRepository extends BaseRepository {
   constructor() {
@@ -139,7 +138,46 @@ class TicketRequestRepository extends BaseRepository {
    */
 
   async findTicketsWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
-    return this.findWithPagination(filter, page, limit, sort)
+    // Lấy danh sách vé phân trang kèm thông tin tripInfo
+    const results = await this.model.aggregate([
+      { $match: filter },
+      { $sort: sort },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'trips',
+          localField: 'tripId',
+          foreignField: '_id',
+          as: 'tripInfo'
+        }
+      },
+      { $unwind: { path: '$tripInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'carcompanies',
+          localField: 'tripInfo.carCompanyId',
+          foreignField: '_id',
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          'carCompanyInfo.seatMap': 0
+        }
+      }
+    ])
+    const total = await this.count(filter)
+    return {
+      results,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
   }
 
   /**
@@ -168,9 +206,47 @@ class TicketRequestRepository extends BaseRepository {
    * @param {number} limit - Số lượng vé trên mỗi trang
    * @return {Array} Danh sách vé của chuyến đi
    * */
-  async findTicketsByTripIdWithPagination(tripId, page = 1, limit = 10) {
-    const filter = { tripId }
-    return this.findWithPagination(filter, page, limit)
+  async findTicketsByTripIdWithPagination(tripId, page = 1, limit = 10, sort = { createdAt: -1 }) {
+    const filter = { tripId: new Types.ObjectId(tripId) }
+    const results = await this.model.aggregate([
+      { $match: filter },
+      { $sort: sort },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'trips',
+          localField: 'tripId',
+          foreignField: '_id',
+          as: 'tripInfo'
+        }
+      },
+      { $unwind: { path: '$tripInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'carcompanies',
+          localField: 'tripInfo.carCompanyId',
+          foreignField: '_id',
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          'carCompanyInfo.seatMap': 0
+        }
+      }
+    ])
+    const total = await this.count(filter)
+    return {
+      results,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
   }
 
   /**
@@ -190,8 +266,48 @@ class TicketRequestRepository extends BaseRepository {
    * @param {number} limit - Số lượng vé trên mỗi trang
    */
   async findTicketsByUserIdWithPagination(userId, page = 1, limit = 10) {
-    const filter = { userId }
-    return this.findWithPagination(filter, page, limit)
+    const filter = { userId: new Types.ObjectId(userId) }
+    const results = await this.model.aggregate([
+      { $match: filter },
+      { $sort: { createdAt: -1 } },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'trips',
+          localField: 'tripId',
+          foreignField: '_id',
+          as: 'tripInfo'
+        }
+      },
+      { $unwind: { path: '$tripInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'carcompanies',
+          localField: 'tripInfo.carCompanyId',
+          foreignField: '_id',
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          'carCompanyInfo.seatMap': 0
+        }
+      }
+    ])
+
+    const total = await this.count(filter)
+
+    return {
+      results,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
   }
 }
 
