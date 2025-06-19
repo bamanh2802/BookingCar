@@ -1,8 +1,10 @@
 import express from 'express'
-import { USER_ROLES } from '~/constants'
+import { USER_ROLES, PERMISSIONS } from '~/constants'
 import { carCompanyController } from '~/controllers/carCompanyController'
+import { vehicleController } from '~/controllers/vehicleController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
 import { carCompanyValidation } from '~/validations/carCompanyValidation'
+import { vehicleValidation } from '~/validations/vehicleValidation'
 
 const Router = express.Router()
 
@@ -30,5 +32,13 @@ Router.route('/:carCompanyId')
     authMiddleware.restrictTo(USER_ROLES.ADMIN),
     carCompanyController.deleteCarCompany
   )
+
+// GET /admin/car-companies/:companyId/vehicles - Lấy vehicles của company
+Router.route('/:companyId/vehicles').get(
+  authMiddleware.authenticate,
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_VEHICLES),
+  vehicleValidation.validateCompanyId,
+  vehicleController.getVehiclesByCompany
+)
 
 export const carCompanyRoutes = Router

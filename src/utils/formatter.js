@@ -58,3 +58,18 @@ export const pickTrip = (trip) => {
     carCompanyId
   }
 }
+
+export const pickVehicle = (vehicle) => {
+  if (!vehicle) return {}
+  return pick(vehicle, [
+    '_id',
+    'companyId', 
+    'licensePlate',
+    'specifications',
+    'status',
+    'seatMap',
+    'totalSeats',
+    'createdAt',
+    'updatedAt'
+  ])
+}
