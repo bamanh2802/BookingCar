@@ -44,8 +44,10 @@ const login = async (credentials) => {
   return {
     accessToken,
     refreshToken,
-    ...pickUser(user),
-    roleName: userRole ? userRole.roleName : null
+    ...pickUser({
+      ...user.toObject(),
+      roleName: userRole ? userRole.roleName : null
+    })
   }
 }
 

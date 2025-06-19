@@ -47,7 +47,15 @@ const register = async (userData, creatorId = null) => {
     parentId: creatorId // Người tạo tài khoản (nếu có)
   })
 
-  return pickUser(user)
+  // Lấy thông tin role để có roleName
+  const userWithRole = await userRepository.findByIdWithRole(user._id)
+  const userObj = userWithRole.toObject()
+  if (userObj.roleId && userObj.roleId.roleName) {
+    userObj.roleName = userObj.roleId.roleName
+    delete userObj.roleId
+  }
+
+  return pickUser(userObj)
 }
 
 /**
@@ -69,7 +77,16 @@ const updateUser = async (userId, updateData) => {
 
   // Cập nhật thông tin người dùng
   const updatedUser = await userRepository.updateById(userId, updateData)
-  return pickUser(updatedUser)
+  
+  // Lấy thông tin role để có roleName
+  const userWithRole = await userRepository.findByIdWithRole(userId)
+  const userObj = userWithRole.toObject()
+  if (userObj.roleId && userObj.roleId.roleName) {
+    userObj.roleName = userObj.roleId.roleName
+    delete userObj.roleId
+  }
+  
+  return pickUser(userObj)
 }
 
 /**
@@ -78,11 +95,19 @@ const updateUser = async (userId, updateData) => {
  * @returns {Object} Thông tin người dùng
  */
 const getUserById = async (userId) => {
-  const user = await userRepository.findById(userId)
+  const user = await userRepository.findByIdWithRole(userId)
   if (!user) {
     throw new NotFoundError('User not found')
   }
-  return pickUser(user)
+  
+  // Transform để có roleName thay vì roleId
+  const userObj = user.toObject()
+  if (userObj.roleId && userObj.roleId.roleName) {
+    userObj.roleName = userObj.roleId.roleName
+    delete userObj.roleId
+  }
+  
+  return pickUser(userObj)
 }
 
 /**
@@ -157,7 +182,15 @@ const createUser = async (userData, creatorId) => {
     parentId: creatorId
   })
 
-  return pickUser(user)
+  // Lấy thông tin role để có roleName
+  const userWithRole = await userRepository.findByIdWithRole(user._id)
+  const userObj = userWithRole.toObject()
+  if (userObj.roleId && userObj.roleId.roleName) {
+    userObj.roleName = userObj.roleId.roleName
+    delete userObj.roleId
+  }
+
+  return pickUser(userObj)
 }
 
 export const userService = {
