@@ -5,15 +5,7 @@ import ApiResponse from '~/utils/ApiResponse'
 import { catchAsync } from '~/utils/catchAsync'
 
 /**
- * Đăng ký người dùng mới
- */
-const register = catchAsync(async (req, res) => {
-  const createdUser = await userService.register(req.body)
-  return res.status(201).json(ApiResponse.created(createdUser, 'Đăng ký tài khoản thành công'))
-})
-
-/**
- * Đăng nhập
+ * Admin đăng nhập
  */
 const login = catchAsync(async (req, res) => {
   const userInfo = await authService.login(req.body)
@@ -37,25 +29,7 @@ const login = catchAsync(async (req, res) => {
 })
 
 /**
- * Cập nhật thông tin người dùng
- */
-const updateProfile = catchAsync(async (req, res) => {
-  const userId = req.user._id
-  const updatedUser = await userService.updateUser(userId, req.body)
-  return res.status(200).json(ApiResponse.success(updatedUser, 'Cập nhật thông tin thành công'))
-})
-
-/**
- * Lấy thông tin người dùng hiện tại
- */
-const getProfile = catchAsync(async (req, res) => {
-  const userId = req.user._id
-  const user = await userService.getUserById(userId)
-  return res.status(200).json(ApiResponse.success(user, 'Lấy thông tin người dùng thành công'))
-})
-
-/**
- * Refresh token
+ * Admin refresh token
  */
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies
@@ -76,12 +50,27 @@ const refreshToken = catchAsync(async (req, res) => {
   return res.status(200).json(ApiResponse.success(result, 'Refresh token thành công'))
 })
 
-// Admin functions moved to adminUserController.js
+/**
+ * Lấy thông tin admin hiện tại
+ */
+const getProfile = catchAsync(async (req, res) => {
+  const userId = req.user._id
+  const user = await userService.getUserById(userId)
+  return res.status(200).json(ApiResponse.success(user, 'Lấy thông tin admin thành công'))
+})
 
-export const userController = {
-  register,
+/**
+ * Cập nhật thông tin admin
+ */
+const updateProfile = catchAsync(async (req, res) => {
+  const userId = req.user._id
+  const updatedUser = await userService.updateUser(userId, req.body)
+  return res.status(200).json(ApiResponse.success(updatedUser, 'Cập nhật thông tin thành công'))
+})
+
+export const adminAuthController = {
   login,
-  updateProfile,
+  refreshToken,
   getProfile,
-  refreshToken
-}
+  updateProfile
+} 
