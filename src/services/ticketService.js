@@ -2,9 +2,10 @@ import { TICKET_STATUS, TITLE_TICKET_REQUESTS } from '~/constants'
 import ticketRepository from '~/repositories/ticketRepository'
 import tripRespository from '~/repositories/tripRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
-import { ConflictError } from '~/utils/errors'
+import { ConflictError, NotFoundError } from '~/utils/errors'
 import { toUTC } from '~/utils/timeTranfer'
 import mongoose from 'mongoose'
+import { pickTrip } from '~/utils/formatter'
 
 /**
  * Tạo mới vé
@@ -25,7 +26,15 @@ const createTicket = async (ticket) => {
  * Lấy danh sách vé với phân trang
  */
 const getTickets = async (filter = {}, page = 1, limit = 10) => {
-  return ticketRepository.findTicketsWithPagination(filter, page, limit)
+  const data = await ticketRepository.findTicketsWithPagination(filter, page, limit)
+  if (!data || data.length === 0) {
+    throw new NotFoundError('Không tìm thấy vé ')
+  }
+  data.results = data.results.map((ticket) => ({
+    ...ticket,
+    tripInfo: ticket.tripInfo ? pickTrip(ticket.tripInfo) : null
+  }))
+  return data
 }
 
 /**
@@ -143,22 +152,32 @@ const deleteTicket = async (ticketId) => {
  * Lấy vé theo ID người dùng
  */
 const getTicketsByUserId = async (userId) => {
-  const tickets = await ticketRepository.findTicketsByUserId(userId)
-  if (!tickets || tickets.length === 0) {
-    throw new Error('Không tìm thấy vé cho người dùng này')
+  const data = await ticketRepository.findTicketsByUserIdWithPagination(userId)
+  if (!data || data.length === 0) {
+    throw new NotFoundError('Không tìm thấy vé cho người dùng này')
   }
-  return tickets
+
+  data.results = data.results.map((ticket) => ({
+    ...ticket,
+    tripInfo: ticket.tripInfo ? pickTrip(ticket.tripInfo) : null
+  }))
+
+  return data
 }
 
 /**
  * Lấy vé theo ID chuyến đi
  */
 const getTicketsByTripId = async (tripId, page = 1, limit = 10) => {
-  const tickets = await ticketRepository.findTicketsByTripIdWithPagination(tripId, page, limit)
-  if (!tickets || tickets.results.length === 0) {
-    throw new Error('Không tìm thấy vé cho chuyến đi này')
+  const data = await ticketRepository.findTicketsByTripIdWithPagination(tripId, page, limit)
+  if (!data || data.length === 0) {
+    throw new NotFoundError('Không tìm thấy vé cho chuyến đi này')
   }
-  return tickets
+  data.results = data.results.map((ticket) => ({
+    ...ticket,
+    tripInfo: ticket.tripInfo ? pickTrip(ticket.tripInfo) : null
+  }))
+  return data
 }
 
 /**

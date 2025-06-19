@@ -76,7 +76,46 @@ class TicketRequestRepository extends BaseRepository {
    * @returns {Object} Danh sách yêu cầu vé và thông tin phân trang
    */
   async findTicketRequestsWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
-    return this.findWithPagination(filter, page, limit, sort)
+    const pipeline = [
+      { $match: filter },
+      { $sort: sort },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'trips',
+          localField: 'tripId',
+          foreignField: '_id',
+          as: 'tripInfo'
+        }
+      },
+      { $unwind: { path: '$tripInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'carcompanies',
+          localField: 'tripInfo.carCompanyId',
+          foreignField: '_id',
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          'carCompanyInfo.seatMap': 0
+        }
+      }
+    ]
+    const results = await this.model.aggregate(pipeline)
+    const total = await this.count(filter)
+    return {
+      results,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
   }
 
   /**
@@ -93,8 +132,8 @@ class TicketRequestRepository extends BaseRepository {
    * @param {String} userId - ID của người dùng
    */
   async findTicketRequestsByUserId(userId, page = 1, limit = 10) {
-    const filter = { userId }
-    return this.findWithPagination(filter, page, limit)
+    const filter = { userId: new Types.ObjectId(userId) }
+    return this.findTicketRequestsWithPagination(filter, page, limit)
   }
 
   /**
@@ -102,8 +141,8 @@ class TicketRequestRepository extends BaseRepository {
    * @param {String} tripId - ID của chuyến đi
    */
   async findTicketRequestsByTripId(tripId, page = 1, limit = 10) {
-    const filter = { tripId }
-    return this.findWithPagination(filter, page, limit)
+    const filter = { tripId: new Types.ObjectId(tripId) }
+    return this.findTicketRequestsWithPagination(filter, page, limit)
   }
 
   /**
