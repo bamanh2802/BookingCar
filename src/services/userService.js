@@ -193,10 +193,37 @@ const createUser = async (userData, creatorId) => {
   return pickUser(userObj)
 }
 
+/**
+ * Xóa người dùng theo ID
+ * @param {string} userId - ID của người dùng cần xóa
+ * @returns {Object} Thông tin xác nhận xóa
+ */
+const deleteUser = async (userId) => {
+  const user = await userRepository.findById(userId)
+  if (!user) {
+    throw new NotFoundError('User not found')
+  }
+
+  // Kiểm tra không cho phép xóa admin
+  const userWithRole = await userRepository.findByIdWithRole(userId)
+  if (userWithRole.roleId && userWithRole.roleId.roleName === 'Admin') {
+    throw new Error('Không thể xóa tài khoản Admin')
+  }
+
+  // Thực hiện xóa user
+  await userRepository.deleteById(userId)
+
+  return {
+    deletedUserId: userId,
+    message: 'Người dùng đã được xóa thành công'
+  }
+}
+
 export const userService = {
   register,
   updateUser,
   getUserById,
   getUsers,
-  createUser
+  createUser,
+  deleteUser
 }
