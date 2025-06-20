@@ -219,11 +219,28 @@ const deleteUser = async (userId) => {
   }
 }
 
+/**
+ * Lấy danh sách người dùng được tạo bởi user hiện tại (admin hoặc đại lý)
+ * @param {String} parentId - ID của user tạo ra các user khác (admin hoặc đại lý)
+ * @param {Number} page - Trang hiện tại
+ * @param {Number} limit - Số lượng items mỗi trang
+ * @returns {Object} Danh sách người dùng được tạo với phân trang
+ */
+const getUsersCreatedByParent = async (parentId, page = 1, limit = 10) => {
+  const result = await userRepository.findByParentIdWithPagination(parentId, page, limit)
+
+  // Loại bỏ thông tin nhạy cảm
+  result.results = result.results.map((user) => pickUser(user))
+
+  return result
+}
+
 export const userService = {
   register,
   updateUser,
   getUserById,
   getUsers,
   createUser,
-  deleteUser
+  deleteUser,
+  getUsersCreatedByParent
 }

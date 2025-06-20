@@ -89,6 +89,19 @@ class UserRepository extends BaseRepository {
       }
     }
   }
+
+  /**
+   * Tìm danh sách người dùng được tạo bởi user có parentId cụ thể
+   * @param {String} parentId - ID của user tạo ra các user khác
+   * @param {Number} page - Trang hiện tại (bắt đầu từ 1)
+   * @param {Number} limit - Số lượng items mỗi trang
+   * @param {Object} sort - Điều kiện sắp xếp
+   * @returns {Promise<Object>} Kết quả phân trang với roleName
+   */
+  async findByParentIdWithPagination(parentId, page = 1, limit = 10, sort = { createdAt: -1 }) {
+    const filter = { parentId }
+    return this.findWithPagination(filter, page, limit, sort)
+  }
 }
 
 // Singleton pattern

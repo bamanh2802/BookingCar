@@ -76,6 +76,21 @@ const refreshToken = catchAsync(async (req, res) => {
   return res.status(200).json(ApiResponse.success(result, 'Refresh token thành công'))
 })
 
+/**
+ * Lấy danh sách người dùng được tạo bởi admin hoặc đại lý hiện tại
+ */
+const getMyCreatedUsers = catchAsync(async (req, res) => {
+  const currentUserId = req.user._id
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 10
+
+  const result = await userService.getUsersCreatedByParent(currentUserId, page, limit)
+  
+  return res.status(200).json(
+    ApiResponse.success(result, 'Lấy danh sách người dùng được tạo thành công')
+  )
+})
+
 // Admin functions moved to adminUserController.js
 
 export const userController = {
@@ -83,5 +98,6 @@ export const userController = {
   login,
   updateProfile,
   getProfile,
-  refreshToken
+  refreshToken,
+  getMyCreatedUsers
 }

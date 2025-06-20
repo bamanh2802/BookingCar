@@ -24,6 +24,13 @@ Router.route('/profile')
   .get(authMiddleware.authenticate, userController.getProfile)
   .patch(authMiddleware.authenticate, userValidation.updateProfile, userController.updateProfile)
 
+// Route lấy danh sách người dùng được tạo bởi admin hoặc đại lý hiện tại
+Router.route('/my-created-users').get(
+  authMiddleware.authenticate,
+  authMiddleware.restrictTo(USER_ROLES.ADMIN, USER_ROLES.AGENT_LV1, USER_ROLES.AGENT_LV2),
+  userController.getMyCreatedUsers
+)
+
 //Route liên quan đến tài khoản ngân hàng
 Router.route('/bank-account')
   // Lấy toàn bộ tài khoản ngân hàng của người dùng (admin only)
