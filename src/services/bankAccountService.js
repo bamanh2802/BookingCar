@@ -35,9 +35,19 @@ const deleteBankAccount = async (accountId) => {
   return await bankAccountRepository.deleteBankAccount(accountId)
 }
 
+const getBankAccountByUserId = async (userId) => {
+  // Lấy tài khoản ngân hàng theo userId
+  const bankAccount = await bankAccountRepository.getBankAccountsByUserId(userId)
+  if (!bankAccount) {
+    throw new Error('Tài khoản ngân hàng không tồn tại cho người dùng này')
+  }
+  return bankAccount
+}
+
 export const bankAccountService = {
   createBankAccount,
   getAllBankAccounts,
   updateBankAccount,
-  deleteBankAccount
+  deleteBankAccount,
+  getBankAccountByUserId
 }

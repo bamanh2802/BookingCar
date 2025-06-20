@@ -52,4 +52,11 @@ Router.route('/bank-account/:accountId')
     authMiddleware.hasPermission(PERMISSIONS.DELETE_BANK_ACCOUNT),
     bankAccountController.deleteBankAccount
   )
+
+Router.route('/bank-account/:userId').get(
+  authMiddleware.authenticate,
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_BANK_ACCOUNT),
+  authMiddleware.isSelf,
+  bankAccountController.getBankAccountByUserId
+)
 export const userRoutes = Router

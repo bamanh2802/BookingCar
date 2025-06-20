@@ -250,13 +250,24 @@ const checkViewTicketRequestById = catchAsync(async (req, res, next) => {
  * Middleware kiểm tra quyền update/cancel ticket
  * Nếu status là CANCELLED thì chỉ cần authenticate, ngược lại phải có quyền UPDATE_TICKET
  */
-const checkUpdateOrCancelTicket = (req, res, next) => {
+const checkUpdateOrCancelTicket = catchAsync((req, res, next) => {
   const { status } = req.body
   if (status === TICKET_STATUS.CANCELLED) {
     return next()
   }
   return authMiddleware.hasPermission(PERMISSIONS.UPDATE_TICKET)(req, res, next)
-}
+})
+
+// Kiểm tra xem người dùng có phải là mình hay không
+const isSelf = catchAsync(async (req, res, next) => {
+  const userRole = req.userRole?.roleName
+  if (userRole !== 'Client') return next()
+  const { userId } = req.params
+  if (!userId || req.user._id.toString() !== userId) {
+    return res.status(403).json({ message: 'Bạn không có quyền truy cập vào thông tin này.' })
+  }
+  next()
+})
 
 export const authMiddleware = {
   authenticate,
@@ -266,5 +277,6 @@ export const authMiddleware = {
   checkViewTicketByUserId,
   checkViewTripByUserRole,
   checkViewTicketRequestById,
-  checkUpdateOrCancelTicket
+  checkUpdateOrCancelTicket,
+  isSelf
 }

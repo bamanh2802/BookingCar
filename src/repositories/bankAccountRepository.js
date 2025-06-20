@@ -25,6 +25,7 @@ class BankAccountRepository extends BaseRepository {
       { $unwind: '$userInfo' },
       {
         $project: {
+          'userInfo._id': 1,
           'userInfo.email': 1,
           'userInfo.fullName': 1,
           'userInfo.phone': 1,
@@ -62,6 +63,7 @@ class BankAccountRepository extends BaseRepository {
       { $unwind: '$userInfo' },
       {
         $project: {
+          'userInfo._id': 1,
           'userInfo.email': 1,
           'userInfo.fullName': 1,
           'userInfo.phone': 1,

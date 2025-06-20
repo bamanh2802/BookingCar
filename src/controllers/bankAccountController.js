@@ -14,7 +14,6 @@ const getAllBankAccounts = catchAsync(async (req, res) => {
   const { userId, bankName, isVerified } = req.query
   const page = parseInt(req.query.page) || 1
   const limit = parseInt(req.query.limit) || 10
-  const sortBy = req.query.sortBy || 'createdAt'
 
   const filter = {}
 
@@ -50,9 +49,18 @@ const deleteBankAccount = catchAsync(async (req, res) => {
   res.status(StatusCodes.OK).json(ApiResponse.success(null, 'Xóa tài khoản ngân hàng thành công'))
 })
 
+const getBankAccountByUserId = catchAsync(async (req, res) => {
+  const { userId } = req.params
+  const bankAccount = await bankAccountService.getBankAccountByUserId(userId)
+  res
+    .status(StatusCodes.OK)
+    .json(ApiResponse.success(bankAccount, 'Lấy tài khoản ngân hàng theo người dùng thành công'))
+})
+
 export const bankAccountController = {
   createBankAccount,
   getAllBankAccounts,
   updateBankAccount,
-  deleteBankAccount
+  deleteBankAccount,
+  getBankAccountByUserId
 }
