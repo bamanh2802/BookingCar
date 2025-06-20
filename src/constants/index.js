@@ -43,7 +43,10 @@ export const VALIDATION_RULES = {
   FULLNAME_MAX_LENGTH: 100,
 
   // Độ dài tối thiểu cho tên đầy đủ
-  FULLNAME_MIN_LENGTH: 2
+  FULLNAME_MIN_LENGTH: 2,
+
+  // Regex cho định dạng số tài khoản ngân hàng
+  BANK_ACCOUNT_NUMBER_RULE: /^\d{8,20}$/
 }
 
 // Các tên document/model trong database
