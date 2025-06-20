@@ -124,7 +124,9 @@ export const PERMISSIONS = {
   VIEW_BANK_ACCOUNT: 'view_bank_account',
   UPDATE_BANK_ACCOUNT: 'update_bank_account',
   DELETE_BANK_ACCOUNT: 'delete_bank_account',
-  CREATE_BANK_ACCOUNT: 'create_bank_account'
+  CREATE_BANK_ACCOUNT: 'create_bank_account',
+  // Quyền xác minh tài khoản ngân hàng
+  VERIFY_BANK_ACCOUNT: 'verify_bank_account'
 }
 
 // Phân quyền mặc định cho từng vai trò
@@ -169,7 +171,8 @@ export const DEFAULT_ROLE_PERMISSIONS = {
     PERMISSIONS.VIEW_BANK_ACCOUNT,
     PERMISSIONS.UPDATE_BANK_ACCOUNT,
     PERMISSIONS.DELETE_BANK_ACCOUNT,
-    PERMISSIONS.CREATE_BANK_ACCOUNT
+    PERMISSIONS.CREATE_BANK_ACCOUNT,
+    PERMISSIONS.VERIFY_BANK_ACCOUNT
   ],
   [USER_ROLES.AGENT_LV1]: [
     PERMISSIONS.VIEW_USERS,

@@ -59,4 +59,12 @@ Router.route('/bank-account/:userId').get(
   authMiddleware.isSelf,
   bankAccountController.getBankAccountByUserId
 )
+
+Router.route('/bank-account/verify/:accountId').patch(
+  authMiddleware.authenticate,
+  authMiddleware.hasPermission(PERMISSIONS.VERIFY_BANK_ACCOUNT),
+  bankAccountValidation.verifyBankAccount,
+  bankAccountController.verifyBankAccount
+)
+
 export const userRoutes = Router

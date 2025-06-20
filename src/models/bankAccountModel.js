@@ -12,7 +12,7 @@ const bankAccountSchema = new Schema(
       match: [VALIDATION_RULES.BANK_ACCOUNT_NUMBER_RULE, 'Số tài khoản phải là chuỗi số từ 8 đến 20 chữ số']
     },
     accountHolderName: { type: String, required: true },
-    isverified: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
     verificationNote: { type: String, default: '' }
   },
   { timestamps: true }

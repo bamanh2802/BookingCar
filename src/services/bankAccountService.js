@@ -44,10 +44,21 @@ const getBankAccountByUserId = async (userId) => {
   return bankAccount
 }
 
+const verifyBankAccount = async (accountId, verificationData) => {
+  // Kiểm tra xem tài khoản ngân hàng có tồn tại không
+  const existingAccount = await bankAccountRepository.findById(accountId)
+  if (!existingAccount) {
+    throw new Error('Tài khoản ngân hàng không tồn tại')
+  }
+  // Cập nhật trạng thái xác minh tài khoản ngân hàng
+  return await bankAccountRepository.updateVerificationStatus(accountId, verificationData)
+}
+
 export const bankAccountService = {
   createBankAccount,
   getAllBankAccounts,
   updateBankAccount,
   deleteBankAccount,
-  getBankAccountByUserId
+  getBankAccountByUserId,
+  verifyBankAccount
 }

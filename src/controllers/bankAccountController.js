@@ -57,10 +57,23 @@ const getBankAccountByUserId = catchAsync(async (req, res) => {
     .json(ApiResponse.success(bankAccount, 'Lấy tài khoản ngân hàng theo người dùng thành công'))
 })
 
+const verifyBankAccount = catchAsync(async (req, res) => {
+  const { accountId } = req.params
+  const { isVerified, verificationNote } = req.body
+
+  const updatedAccount = await bankAccountService.verifyBankAccount(accountId, {
+    isVerified,
+    verificationNote
+  })
+
+  res.status(StatusCodes.OK).json(ApiResponse.success(updatedAccount))
+})
+
 export const bankAccountController = {
   createBankAccount,
   getAllBankAccounts,
   updateBankAccount,
   deleteBankAccount,
-  getBankAccountByUserId
+  getBankAccountByUserId,
+  verifyBankAccount
 }
