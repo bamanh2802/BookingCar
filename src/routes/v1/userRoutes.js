@@ -1,8 +1,10 @@
 import express from 'express'
-import { PERMISSIONS } from '~/constants'
+import { PERMISSIONS, USER_ROLES } from '~/constants'
+import { bankAccountController } from '~/controllers/bankAccountController'
 import { userController } from '~/controllers/userController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
 import ApiResponse from '~/utils/ApiResponse'
+import { bankAccountValidation } from '~/validations/bankAccountvalidation'
 import { userValidation } from '~/validations/userValidation'
 
 const Router = express.Router()
@@ -21,5 +23,48 @@ Router.route('/refresh-token').post(userController.refreshToken)
 Router.route('/profile')
   .get(authMiddleware.authenticate, userController.getProfile)
   .patch(authMiddleware.authenticate, userValidation.updateProfile, userController.updateProfile)
+
+//Route liên quan đến tài khoản ngân hàng
+Router.route('/bank-account')
+  // Lấy toàn bộ tài khoản ngân hàng của người dùng (admin only)
+  .get(
+    authMiddleware.authenticate,
+    authMiddleware.restrictTo(USER_ROLES.ADMIN),
+    bankAccountController.getAllBankAccounts
+  )
+  .post(
+    authMiddleware.authenticate,
+    authMiddleware.hasPermission(PERMISSIONS.CREATE_BANK_ACCOUNT),
+    bankAccountValidation.createBankAccount,
+    bankAccountController.createBankAccount
+  )
+
+// Route cập nhật và xóa tài khoản ngân hàng
+Router.route('/bank-account/:accountId')
+  .patch(
+    authMiddleware.authenticate,
+    authMiddleware.hasPermission(PERMISSIONS.UPDATE_BANK_ACCOUNT),
+    bankAccountValidation.updatebankAccount,
+    bankAccountController.updateBankAccount
+  )
+  .delete(
+    authMiddleware.authenticate,
+    authMiddleware.hasPermission(PERMISSIONS.DELETE_BANK_ACCOUNT),
+    bankAccountController.deleteBankAccount
+  )
+
+Router.route('/bank-account/:userId').get(
+  authMiddleware.authenticate,
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_BANK_ACCOUNT),
+  authMiddleware.isSelf,
+  bankAccountController.getBankAccountByUserId
+)
+
+Router.route('/bank-account/verify/:accountId').patch(
+  authMiddleware.authenticate,
+  authMiddleware.hasPermission(PERMISSIONS.VERIFY_BANK_ACCOUNT),
+  bankAccountValidation.verifyBankAccount,
+  bankAccountController.verifyBankAccount
+)
 
 export const userRoutes = Router

@@ -8,6 +8,7 @@ import { tripRoutes } from './tripRoutes'
 import { ticketRequestRoutes } from './ticketRequestRoutes'
 import { ticketRoutes } from './ticketRoutes'
 import { adminRoutes } from '../admin/index.js'
+import { commissionRoutes } from './commissionRoutes'
 
 const Router = express.Router()
 
@@ -26,5 +27,6 @@ Router.use('/vehicles', vehicleRoute)
 Router.use('/trips', tripRoutes)
 Router.use('/ticket-requests', ticketRequestRoutes)
 Router.use('/tickets', ticketRoutes)
+Router.use('/commissions', commissionRoutes)
 
 export const API_V1 = Router

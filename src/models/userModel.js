@@ -61,6 +61,10 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.BANK_ACCOUNT,
       default: null
+    },
+    amount: {
+      type: Number,
+      default: 0
     }
   },
   {
