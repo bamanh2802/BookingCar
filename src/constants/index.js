@@ -5,7 +5,14 @@
 //Các tiêu đề yêu cầu
 export const TITLE_TICKET_REQUESTS = {
   BOOK_TICKET: 'Book Ticket',
-  CANCEL_TICKET: 'Cancel ticket'
+  CANCEL_TICKET: 'Cancel Ticket',
+  REFUND: 'Refund Ticket'
+}
+
+export const REFUND_STATUS = {
+  PENDING: 'Pending', // Chờ xử lý
+  COMPLETED: 'Completed', // Đã hoàn tiền
+  FAILED: 'Failed' // Thất bại
 }
 
 // Các roles của người dùng
