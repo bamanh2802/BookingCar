@@ -2,6 +2,7 @@ import express from 'express'
 import { USER_ROLES } from '~/constants'
 import { commissionController } from '~/controllers/commissionController'
 import { authMiddleware } from '~/middlewares/authMiddleware'
+import { commissionValidation } from '~/validations/commissionValidation'
 
 const Router = express.Router()
 
@@ -9,6 +10,7 @@ const Router = express.Router()
 Router.route('/:roleId').patch(
   authMiddleware.authenticate,
   authMiddleware.restrictTo(USER_ROLES.ADMIN),
+  commissionValidation.updateCommission,
   commissionController.updateCommission
 )
 
