@@ -1,6 +1,7 @@
 import { ticketModel } from '~/models/ticketModel'
 import BaseRepository from './baseRepository'
 import { Types } from 'mongoose'
+import { TICKET_STATUS } from '~/constants'
 
 class TicketRequestRepository extends BaseRepository {
   constructor() {
@@ -256,7 +257,7 @@ class TicketRequestRepository extends BaseRepository {
    * @return {Array} Danh sách vé của người dùng cho chuyến đi
    */
   async findTicketByUserIdAndTripId(userId, tripId) {
-    return this.findOne({ userId, tripId })
+    return this.findOne({ userId, tripId, status: { $ne: TICKET_STATUS.CANCELLED } })
   }
 
   /**

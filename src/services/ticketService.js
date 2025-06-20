@@ -64,11 +64,7 @@ const updateTicket = async (ticketId, updateData) => {
   if (toUTC(currentTime) > trip.startTime)
     throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
 
-  if (
-    updateData.status === TICKET_STATUS.CANCELLED &&
-    !!updateData.seats &&
-    updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET
-  ) {
+  if (updateData.seats && updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET) {
     // Bắt đầu transaction
     const session = await mongoose.startSession()
     session.startTransaction()
@@ -76,40 +72,76 @@ const updateTicket = async (ticketId, updateData) => {
       // Lấy seatMap theo tripId
       const seatMap = await seatMapRepository.findByTripId(trip._id)
       if (!seatMap) throw new Error('Seat map không tồn tại cho chuyến đi này')
-      const seatsToRemove = updateData.seats
-      // Xoá ghế khỏi seatMap bằng $pull (so sánh đúng kiểu dữ liệu)
-      await seatMapRepository.updateSeatMap(
-        seatMap._id,
-        {
-          $pull: {
-            seats: {
-              $or: seatsToRemove.map((seat) => ({
-                code: String(seat.code),
-                floor: Number(seat.floor)
-              }))
-            }
+      const ticketSeats = ticketExists.seats || []
+      const updateSeats = updateData.seats || []
+      // Chuẩn hoá kiểu dữ liệu
+      const normalizedUpdateSeats = updateSeats.map((seat) => ({
+        code: String(seat.code),
+        floor: Number(seat.floor)
+      }))
+      const normalizedTicketSeats = ticketSeats.map((seat) => ({
+        code: String(seat.code),
+        floor: Number(seat.floor)
+      }))
+      // So sánh hai mảng seats
+
+      const isFullCancel =
+        normalizedUpdateSeats.length === normalizedTicketSeats.length &&
+        normalizedUpdateSeats.every((s1) =>
+          normalizedTicketSeats.some((s2) => s1.code === s2.code && s1.floor === s2.floor)
+        ) &&
+        normalizedTicketSeats.every((s1) =>
+          normalizedUpdateSeats.some((s2) => s1.code === s2.code && s1.floor === s2.floor)
+        )
+
+      let ticketUpdateData = {}
+      if (isFullCancel) {
+        // Huỷ toàn bộ vé: giữ nguyên ticketExists.seats, chỉ đổi status = CANCELLED
+        await seatMapRepository.updateSeatMap(
+          seatMap._id,
+          {
+            $pull: {
+              seats: {
+                $or: normalizedUpdateSeats
+              }
+            },
+            $inc: { totalBookedSeats: -normalizedUpdateSeats.length }
           },
-          $inc: { totalBookedSeats: -seatsToRemove.length }
-        },
-        { session }
-      )
-      // Tăng availableSeats của trip bằng $inc
-      await tripRespository.updateTrip(trip._id, { $inc: { availableSeats: seatsToRemove.length } }, { session })
-      // Cập nhật vé: loại bỏ các ghế đã huỷ khỏi ticket.seats (so sánh đúng kiểu dữ liệu)
-      const newSeats = (ticketExists.seats || []).filter(
-        (seat) =>
-          !seatsToRemove.some(
-            (removeSeat) =>
-              String(seat.code) === String(removeSeat.code) && Number(seat.floor) === Number(removeSeat.floor)
-          )
-      )
-      // Nếu vẫn còn ghế sau khi huỷ, chỉ cập nhật lại mảng seats và giữ nguyên status cũ
-      // Nếu không còn ghế thì set status = CANCELLED
-      const ticketUpdateData = {
-        seats: newSeats
-      }
-      if (newSeats.length === 0) {
-        ticketUpdateData.status = TICKET_STATUS.CANCELLED
+          { session }
+        )
+        await tripRespository.updateTrip(
+          trip._id,
+          { $inc: { availableSeats: normalizedUpdateSeats.length } },
+          { session }
+        )
+        ticketUpdateData = { status: TICKET_STATUS.CANCELLED }
+      } else {
+        // Huỷ một phần ghế
+        await seatMapRepository.updateSeatMap(
+          seatMap._id,
+          {
+            $pull: {
+              seats: {
+                $or: normalizedUpdateSeats
+              }
+            },
+            $inc: { totalBookedSeats: -normalizedUpdateSeats.length }
+          },
+          { session }
+        )
+        await tripRespository.updateTrip(
+          trip._id,
+          { $inc: { availableSeats: normalizedUpdateSeats.length } },
+          { session }
+        )
+        // Loại bỏ các ghế đã huỷ khỏi ticket.seats
+        const newSeats = normalizedTicketSeats.filter(
+          (seat) =>
+            !normalizedUpdateSeats.some(
+              (removeSeat) => seat.code === removeSeat.code && seat.floor === removeSeat.floor
+            )
+        )
+        ticketUpdateData = { seats: newSeats, status: TICKET_STATUS.CONFIRMED }
       }
       const updatedTicket = await ticketRepository.updateTicket(ticketId, ticketUpdateData, { session })
       if (!updatedTicket) {

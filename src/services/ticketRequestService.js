@@ -133,7 +133,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
   }
 
   // Nếu xác nhận, tạo mới vé và seatMap trong transaction
-  if (updateData.status === TICKET_STATUS.CONFIRMED && updateData.titleRequest === TITLE_TICKET_REQUESTS.BOOK_TICKET) {
+  if (updateData.titleRequest === TITLE_TICKET_REQUESTS.BOOK_TICKET) {
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
@@ -191,9 +191,13 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
         { session }
       )
       // Cập nhật thông tin yêu cầu vé
-      const updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData, {
-        session
-      })
+      const updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(
+        ticketRequestId,
+        { ...updateData, status: TICKET_STATUS.CONFIRMED },
+        {
+          session
+        }
+      )
 
       //Cập nhật lại số ghế còn lại của chuyến đi
       await trip.updateAvailableSeats(requestedSeats.length)
@@ -210,23 +214,22 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       session.endSession()
       throw err
     }
-  } else if (
-    updateData.status === TICKET_STATUS.CANCELLED &&
-    updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET
-  ) {
+  } else if (updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET) {
     // Trường hợp huỷ vé
     // Tìm vé
     const ticket = await ticketService.getTicketByUserIdAndTripId(ticketRequest.userId, ticketRequest.tripId)
     if (ticket) {
       // Gọi updateTicket để xử lý huỷ vé và cập nhật seatMap, trip
       await ticketService.updateTicket(ticket._id, {
-        status: TICKET_STATUS.CANCELLED,
         seats: updateData.seats,
         titleRequest: TITLE_TICKET_REQUESTS.CANCEL_TICKET
       })
     }
     // Cập nhật trạng thái ticketRequest
-    return await ticketRequestRepository.updateTicketRequest(ticketRequestId, updateData)
+    return await ticketRequestRepository.updateTicketRequest(ticketRequestId, {
+      ...updateData,
+      status: TICKET_STATUS.CANCELLED
+    })
   } else {
     // Nếu không phải xác nhận, chỉ update bình thường
     // Kiểm tra đã có vé chưa
