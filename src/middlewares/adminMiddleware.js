@@ -4,10 +4,7 @@ import { PERMISSIONS } from '~/constants'
 /**
  * Middleware cơ bản cho admin - yêu cầu đăng nhập và quyền xem users
  */
-export const adminAuth = [
-  authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.VIEW_USERS)
-]
+export const adminAuth = [authMiddleware.authenticate, authMiddleware.hasPermission(PERMISSIONS.VIEW_USERS)]
 
 /**
  * Middleware cho admin user management - bao gồm kiểm tra quyền quản lý user
@@ -21,10 +18,7 @@ export const adminUserManagement = [
 /**
  * Middleware cho admin user creation
  */
-export const adminUserCreate = [
-  authMiddleware.authenticate,
-  authMiddleware.hasPermission(PERMISSIONS.CREATE_USER)
-]
+export const adminUserCreate = [authMiddleware.authenticate, authMiddleware.hasPermission(PERMISSIONS.CREATE_USER)]
 
 /**
  * Middleware cho admin user update
@@ -49,4 +43,4 @@ export const adminUserDelete = [
  */
 export const adminAuthOnly = [
   // Chỉ cần authentication middleware khi cần thiết
-] 
+]
