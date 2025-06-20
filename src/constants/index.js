@@ -56,7 +56,9 @@ export const DOCUMENT_NAMES = {
   TICKET: 'Ticket',
   TRIP: 'Trip',
   SEAT_MAP: 'SeatMap',
-  TICKET_REQUEST: 'TicketRequest'
+  TICKET_REQUEST: 'TicketRequest',
+  COMMISSION: 'Commission',
+  REFUND_HISTORY: 'RefundHistory'
 }
 
 // Các quyền hạn chi tiết

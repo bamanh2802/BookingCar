@@ -3,6 +3,7 @@ import { env } from '~/config/environment'
 import { DEFAULT_ROLE_PERMISSIONS, USER_ROLES } from '~/constants'
 import { userModel } from '~/models/userModel'
 import { userRole } from '~/models/userRoleModel'
+import { commissionModel } from '~/models/commissionModel'
 import logger from '~/utils/logger'
 
 // Tạo các vai trò mặc định
@@ -24,12 +25,12 @@ export const createDefaultRoles = async () => {
       } else {
         // Cập nhật permissions cho role đã tồn tại
         const updatedPermissions = DEFAULT_ROLE_PERMISSIONS[roleName] || []
-        
+
         // Kiểm tra xem có cần cập nhật permissions không
         const currentPermissions = existingRole.permissions || []
-        const needsUpdate = 
+        const needsUpdate =
           updatedPermissions.length !== currentPermissions.length ||
-          !updatedPermissions.every(permission => currentPermissions.includes(permission))
+          !updatedPermissions.every((permission) => currentPermissions.includes(permission))
 
         if (needsUpdate) {
           existingRole.permissions = updatedPermissions
@@ -38,7 +39,7 @@ export const createDefaultRoles = async () => {
         } else {
           logger.info(`Role permissions already up to date: ${roleName}`)
         }
-        
+
         roles[roleName] = existingRole
       }
     }
@@ -80,6 +81,51 @@ export const createDefaultAdmin = async (adminRoleId) => {
   }
 }
 
+// Hàm khởi tạo commissionRates mặc định cho các role
+export const createDefaultCommissionRates = async () => {
+  try {
+    const commissions = {}
+    // Định nghĩa phần trăm hoa hồng mặc định cho từng role
+    const defaultRates = {
+      Admin: 0,
+      AgentLv1: 10,
+      AgentLv2: 8,
+      Client: 5
+    }
+
+    for (const roleName of Object.values(USER_ROLES)) {
+      const role = await userRole.findOne({ roleName })
+      if (!role) {
+        logger.warn(`Role not found: ${roleName}`)
+        continue
+      }
+      const existingCommission = await commissionModel.findOne({ roleId: role._id })
+      const defaultPercent = defaultRates[roleName] ?? 0
+      if (!existingCommission) {
+        const newCommission = await commissionModel.create({
+          roleId: role._id,
+          percent: defaultPercent
+        })
+        commissions[roleName] = newCommission
+        logger.info(`Created default commission for role: ${roleName}`)
+      } else {
+        if (existingCommission.percent !== defaultPercent) {
+          existingCommission.percent = defaultPercent
+          await existingCommission.save()
+          logger.info(`Updated commission percent for role: ${roleName}`)
+        } else {
+          logger.info(`Commission percent already up to date for role: ${roleName}`)
+        }
+        commissions[roleName] = existingCommission
+      }
+    }
+    return commissions
+  } catch (error) {
+    logger.error('Error initializing commission rates', error)
+    throw error
+  }
+}
+
 // Hàm khởi tạo vai trò và admin mặc định
 export const initializeRolesAndAdmin = async () => {
   try {
@@ -91,7 +137,10 @@ export const initializeRolesAndAdmin = async () => {
       await createDefaultAdmin(roles[USER_ROLES.ADMIN]._id)
     }
 
-    logger.info('Roles and admin initialized successfully')
+    // Tạo commissionRates mặc định
+    await createDefaultCommissionRates()
+
+    logger.info('Roles, admin, and commission rates initialized successfully')
     return true
   } catch (error) {
     logger.error('Failed to initialize roles and admin:', error)
