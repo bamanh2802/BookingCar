@@ -87,9 +87,9 @@ export const createDefaultCommissionRates = async () => {
     const commissions = {}
     // Định nghĩa phần trăm hoa hồng mặc định cho từng role
     const defaultRates = {
-      Admin: 0,
-      AgentLv1: 10,
-      AgentLv2: 8,
+      Admin: 10,
+      AgentLv1: 15,
+      AgentLv2: 20,
       Client: 5
     }
 

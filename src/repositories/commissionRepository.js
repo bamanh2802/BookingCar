@@ -83,6 +83,24 @@ class CommissionRepository extends BaseRepository {
     }
     return { ...commission, roleId: commission.roleId._id, roleName: commission.roleId.roleName }
   }
+
+  /**
+   * Tạo mới hoa hồng cho role
+   * @param {Object} commissionData - Dữ liệu hoa hồng
+   */
+  async createCommission(commissionData) {
+    const { roleId, percent } = commissionData
+
+    // Kiểm tra xem hoa hồng đã tồn tại cho role này chưa
+    const existingCommission = await this.findByRoleId(roleId)
+    if (existingCommission) {
+      throw new Error('Hoa hồng đã tồn tại cho role này')
+    }
+
+    // Tạo mới hoa hồng
+    const newCommission = new this.model({ roleId, percent })
+    return newCommission.save()
+  }
 }
 
 const commissionRepository = new CommissionRepository()

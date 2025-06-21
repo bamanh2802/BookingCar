@@ -1,10 +1,14 @@
 import mongoose from 'mongoose'
+import { TICKET_STATUS, TRIP_TITLES } from '~/constants'
 import carCompanyRepository from '~/repositories/carCompanyRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
+import ticketRepository from '~/repositories/ticketRepository'
 import tripRespository from '~/repositories/tripRepository'
 import { ConflictError } from '~/utils/errors'
 import { pickTrip } from '~/utils/formatter'
 import { dayRangeUTC, toUTC } from '~/utils/timeTranfer'
+import ticketService from './ticketService'
+import { commissionService } from './commissionService'
 
 /**
  * Lấy danh sách chuyến đi theo ngày hiện tại
@@ -113,12 +117,44 @@ const createTrip = async (tripData) => {
  * Cập nhật chuyến đi
  */
 const updateTrip = async (tripId, tripData) => {
-  const trip = await tripRespository.findById(tripId)
-  if (!trip) {
-    throw new ConflictError('Chuyến đi không tồn tại')
+  const session = await mongoose.startSession()
+  try {
+    session.startTransaction()
+    const trip = await tripRespository.findById(tripId)
+    if (!trip) {
+      throw new ConflictError('Chuyến đi không tồn tại')
+    }
+    // Kiểm tra xem chuyến đi có đang ở trạng thái đã hoàn thành hay không
+    if (trip.status && trip.status === TRIP_TITLES.COMPLETED) {
+      throw new ConflictError('Không thể cập nhật chuyến đi đã hoàn thành')
+    }
+
+    if (tripData?.status && tripData.status === TRIP_TITLES.COMPLETED) {
+      // Bulk update status tất cả vé thành DONE
+      await ticketRepository.updateMany(
+        { tripId, status: { $eq: TICKET_STATUS.CONFIRMED } },
+        { status: TICKET_STATUS.DONE },
+        { session }
+      )
+      // Lấy các vé vừa cập nhật để trả hoa hồng
+      const tickets = await ticketRepository.findTicketsByTripId(tripId, {
+        status: TICKET_STATUS.DONE,
+        commissionPaid: { $ne: true }
+      })
+      // Trả hoa hồng cho từng vé trong transaction
+      for (const ticket of tickets) {
+        await commissionService.payCommissionForTicket(ticket, session)
+      }
+    }
+    const updatedTrip = await tripRespository.updateById(tripId, { ...tripData }, { new: true, session })
+    await session.commitTransaction()
+    return updatedTrip
+  } catch (error) {
+    await session.abortTransaction()
+    throw error
+  } finally {
+    session.endSession()
   }
-  const updatedTrip = await tripRespository.updateById(tripId, tripData)
-  return updatedTrip
 }
 
 /**

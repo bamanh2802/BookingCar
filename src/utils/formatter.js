@@ -5,7 +5,7 @@ import duration from 'dayjs/plugin/duration'
 
 export const pickUser = (user) => {
   if (!user) return {}
-  return pick(user, ['_id', 'email', 'fullName', 'phone', 'roleName', 'parentId', 'createdAt', 'updatedAt'])
+  return pick(user, ['_id', 'email', 'fullName', 'phone', 'roleName', 'amount', 'parentId', 'createdAt', 'updatedAt'])
 }
 
 dayjs.extend(duration)
@@ -63,7 +63,7 @@ export const pickVehicle = (vehicle) => {
   if (!vehicle) return {}
   return pick(vehicle, [
     '_id',
-    'companyId', 
+    'companyId',
     'licensePlate',
     'specifications',
     'status',

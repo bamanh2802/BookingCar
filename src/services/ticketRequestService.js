@@ -182,6 +182,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
           userId: ticketRequest.userId,
           tripId: ticketRequest.tripId,
           requestId: ticketRequest._id,
+          price: trip.price,
           status: TICKET_STATUS.CONFIRMED,
           seats: requestedSeats,
           type: ticketRequest.type,
@@ -231,7 +232,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       status: TICKET_STATUS.CANCELLED
     })
   } else {
-    // Nếu không phải xác nhận, chỉ update bình thường
+    // Nếu không phải xác nhận, huỷ vé, chỉ update bình thường
     // Kiểm tra đã có vé chưa
     let updatedTicketRequest
     const ticket = await ticketService.getTicketByUserIdAndTripId(ticketRequest.userId, ticketRequest.tripId)

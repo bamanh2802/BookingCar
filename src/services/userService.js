@@ -76,8 +76,8 @@ const updateUser = async (userId, updateData) => {
   delete updateData.password
 
   // Cập nhật thông tin người dùng
-  const updatedUser = await userRepository.updateById(userId, updateData)
-  
+  await userRepository.updateById(userId, updateData)
+
   // Lấy thông tin role để có roleName
   const userWithRole = await userRepository.findByIdWithRole(userId)
   const userObj = userWithRole.toObject()
@@ -85,7 +85,7 @@ const updateUser = async (userId, updateData) => {
     userObj.roleName = userObj.roleId.roleName
     delete userObj.roleId
   }
-  
+
   return pickUser(userObj)
 }
 
@@ -99,14 +99,14 @@ const getUserById = async (userId) => {
   if (!user) {
     throw new NotFoundError('User not found')
   }
-  
+
   // Transform để có roleName thay vì roleId
   const userObj = user.toObject()
   if (userObj.roleId && userObj.roleId.roleName) {
     userObj.roleName = userObj.roleId.roleName
     delete userObj.roleId
   }
-  
+
   return pickUser(userObj)
 }
 
@@ -149,7 +149,7 @@ const createUser = async (userData, creatorId) => {
 
   // Xử lý roleId/roleName
   let roleId = userData.roleId
-  
+
   if (userData.roleName) {
     // Nếu có roleName, tìm roleId tương ứng
     const role = await userRoleRepository.findByRoleName(userData.roleName)
