@@ -22,6 +22,12 @@ export const ticketRequestSchema = Joi.object({
   titleRequest: Joi.string().valid(TITLE_TICKET_REQUESTS.BOOK_TICKET, TITLE_TICKET_REQUESTS.CANCEL_TICKET).messages({
     'any.only': 'Status must be one of BOOK TICKET, CANCEL TICKET'
   }),
+
+  price: Joi.number().required().min(0).messages({
+    'number.base': 'Giá vé không hợp lệ',
+    'number.min': 'Giá vé phải lớn hơn hoặc bằng 0',
+    'any.required': 'Giá vé là trường bắt buộc'
+  }),
   seats: Joi.array()
     .items(
       Joi.object({

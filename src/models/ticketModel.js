@@ -18,6 +18,11 @@ const ticketSchema = new Schema(
       ref: DOCUMENT_NAMES.TICKET_REQUEST,
       required: true
     },
+    price: {
+      type: Number,
+      required: [true, 'Price is required'],
+      min: [0, 'Price must be a positive number']
+    },
     status: {
       type: String,
       enum: [TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED, TICKET_STATUS.CANCELLED, TICKET_STATUS.REFUNDED],
@@ -65,6 +70,10 @@ const ticketSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.USER,
       default: null
+    },
+    commissionPaid: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

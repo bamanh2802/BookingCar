@@ -15,8 +15,13 @@ const ticketRequestSchema = new Schema(
     },
     titleRequest: {
       type: String,
-      enum: [TITLE_TICKET_REQUESTS.BOOK_TICKET, TITLE_TICKET_REQUESTS.CANCEL_TICKET],
+      enum: [TITLE_TICKET_REQUESTS.BOOK_TICKET, TITLE_TICKET_REQUESTS.CANCEL_TICKET, TITLE_TICKET_REQUESTS.REFUND],
       required: true
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: [0, 'Price cannot be negative']
     },
     status: {
       type: String,

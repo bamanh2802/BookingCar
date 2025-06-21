@@ -46,6 +46,11 @@ const ticketSchema = Joi.object({
     'any.required': 'Số điện thoại là trường bắt buộc'
   }),
 
+  price: Joi.number().required().min(0).messages({
+    'number.base': 'Giá vé không hợp lệ',
+    'number.min': 'Giá vé phải lớn hơn hoặc bằng 0',
+    'any.required': 'Giá vé là trường bắt buộc'
+  }),
   seats: Joi.array()
     .items(
       Joi.object({

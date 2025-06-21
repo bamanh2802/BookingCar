@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { CAR_TYPES } from '~/constants'
+import { CAR_TYPES, TRIP_TITLES } from '~/constants'
 
 /**
  * Schema validation thông tin chuyến đi
@@ -46,6 +46,14 @@ export const tripSchema = Joi.object({
     'any.only': 'Loại xe không hợp lệ',
     'any.required': 'Loại xe là trường bắt buộc'
   }),
+  status: Joi.string()
+    .valid(TRIP_TITLES.COMPLETED, TRIP_TITLES.DELAYED, TRIP_TITLES.NOT_STARTED)
+    .default(TRIP_TITLES.NOT_STARTED)
+    .required()
+    .messages({
+      'string.empty': 'Trạng thái không được để trống',
+      'any.only': 'Trạng thái không hợp lệ'
+    }),
 
   carCompanyId: Joi.string().required().messages({
     'string.empty': 'ID công ty xe không được để trống',
@@ -98,7 +106,14 @@ export const tripUpdateSchema = Joi.object({
   type: Joi.string().valid(CAR_TYPES.VIP, CAR_TYPES.REGULAR).messages({
     'string.empty': 'Loại xe không được để trống',
     'any.only': 'Loại xe không hợp lệ'
-  })
+  }),
+  status: Joi.string()
+    .valid(TRIP_TITLES.COMPLETED, TRIP_TITLES.DELAYED, TRIP_TITLES.NOT_STARTED)
+    .default(TRIP_TITLES.NOT_STARTED)
+    .messages({
+      'string.empty': 'Trạng thái không được để trống',
+      'any.only': 'Trạng thái không hợp lệ'
+    })
 })
   .or(
     'startLocation',
@@ -109,7 +124,8 @@ export const tripUpdateSchema = Joi.object({
     'endTime',
     'price',
     'carCompanyId',
-    'type'
+    'type',
+    'status'
   )
   .messages({
     'object.missing': 'Ít nhất một trường phải được cung cấp để cập nhật'

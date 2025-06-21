@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import { Schema } from 'mongoose'
-import { CAR_TYPES, DOCUMENT_NAMES } from '~/constants'
+import { CAR_TYPES, DOCUMENT_NAMES, TRIP_TITLES } from '~/constants'
 import { ConflictError } from '~/utils/errors'
 
 const tripSchema = new Schema(
@@ -65,6 +65,11 @@ const tripSchema = new Schema(
       type: Number,
       required: true,
       min: [0, 'Total seats cannot be negative']
+    },
+    status: {
+      type: String,
+      enum: [TRIP_TITLES.NOT_STARTED, TRIP_TITLES.COMPLETED],
+      default: TRIP_TITLES.NOT_STARTED
     }
   },
   {

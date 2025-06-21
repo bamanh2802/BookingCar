@@ -22,6 +22,14 @@ class TicketRequestRepository extends BaseRepository {
   }
 
   /**
+   * Tìm toàn bộ vé theo ID chuyến đi
+   * @param {String} tripId - ID của chuyến đi
+   */
+  async findTicketsByTripId(tripId) {
+    return this.findAll({ tripId })
+  }
+
+  /**
    * Lấy thông tin vé
    */
   async getTicketDetail(id) {

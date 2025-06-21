@@ -2,6 +2,21 @@
  * File tập trung tất cả các constants trong dự án
  */
 
+export const REASON_REFUND = {
+  TICKET_CANCELLED: 'Ticket Cancelled', // Vé bị hủy
+  TRIP_CANCELLED: 'Trip Cancelled', // Chuyến đi bị hủy
+  USER_REQUEST: 'User Request', // Yêu cầu từ người dùng
+  COMMISSION_PAID: 'Commission Paid', // Hoa hồng đã trả
+  AGENCY_COMMISSION: 'Agency Commission' // Hoa hồng cho đại lý
+}
+
+// Các tiêu đề cho trip
+export const TRIP_TITLES = {
+  NOT_STARTED: 'Not Started', // Chưa bắt đầu
+  COMPLETED: 'Completed', // Đã hoàn thành
+  DELAYED: 'Delayed' // Bị trì hoãn
+}
+
 //Các tiêu đề yêu cầu
 export const TITLE_TICKET_REQUESTS = {
   BOOK_TICKET: 'Book Ticket',
@@ -68,7 +83,8 @@ export const DOCUMENT_NAMES = {
   SEAT_MAP: 'SeatMap',
   TICKET_REQUEST: 'TicketRequest',
   COMMISSION: 'Commission',
-  REFUND_HISTORY: 'RefundHistory'
+  REFUND_HISTORY: 'RefundHistory',
+  COMMISSION_PAID_HISTORY: 'CommissionPaidHistory'
 }
 
 // Các quyền hạn chi tiết
