@@ -44,6 +44,7 @@ export const TICKET_STATUS = {
   CONFIRMED: 'Confirmed', // Đã xác nhận // thanh toán thành công
   CANCELLED: 'Cancelled', // Đã hủy
   REFUNDED: 'Refunded', // Đã hoàn tiền
+  REJECTED: 'Rejected', // Bị từ chối
   DONE: 'Done' // Đã hoàn thành chuyến đi
 }
 

@@ -11,12 +11,6 @@ import { pickTrip } from '~/utils/formatter'
  * Tạo mới vé
  */
 const createTicket = async (ticket) => {
-  // Kiểm tra xem vé đã tồn tại cho chuyến đi này chưa
-  const existingTicket = await ticketRepository.findTicketByUserIdAndTripId(ticket.userId, ticket.tripId)
-  if (existingTicket) {
-    throw new ConflictError('Vé đã tồn tại cho chuyến đi này')
-  }
-
   // Tạo vé mới
   const newTicket = await ticketRepository.createTicket(ticket)
   return newTicket
