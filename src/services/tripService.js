@@ -7,7 +7,6 @@ import tripRespository from '~/repositories/tripRepository'
 import { ConflictError } from '~/utils/errors'
 import { pickTrip } from '~/utils/formatter'
 import { dayRangeUTC, toUTC } from '~/utils/timeTranfer'
-import ticketService from './ticketService'
 import { commissionService } from './commissionService'
 
 /**

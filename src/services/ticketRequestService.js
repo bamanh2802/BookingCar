@@ -6,9 +6,11 @@ import mongoose from 'mongoose'
 import carCompanyRepository from '~/repositories/carCompanyRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
 import ticketService from './ticketService'
-import { TICKET_STATUS, TITLE_TICKET_REQUESTS, USER_ROLES } from '~/constants'
+import { REASON_REFUND, REFUND_STATUS, TICKET_STATUS, TITLE_TICKET_REQUESTS, USER_ROLES } from '~/constants'
 import userRepository from '~/repositories/userRepository'
 import { pickTrip } from '~/utils/formatter'
+import refundHistoryRepository from '~/repositories/refundHistoryRepository'
+import bankAccountRepository from '~/repositories/bankAccountRepository'
 /**
  * Tạo yêu cầu vé mới
  */
@@ -22,21 +24,26 @@ const createTicketRequest = async (ticketRequest, currentUser) => {
     ticketRequest.createdBy = currentUser._id
   }
 
-  //Kiểm tra xem chuyến đi có tồn tại không
-  const trip = await tripRespository.findTripById(ticketRequest.tripId)
-  if (!trip) {
-    throw new NotFoundError('Chuyến đi không tồn tại')
-  }
+  if (ticketRequest.titleRequest !== TITLE_TICKET_REQUESTS.REFUND) {
+    //Kiểm tra xem chuyến đi có tồn tại không
+    const trip = await tripRespository.findTripById(ticketRequest.tripId)
+    if (!trip) {
+      throw new NotFoundError('Chuyến đi không tồn tại')
+    }
 
-  //Kiểm tra xem loại vé có hợp lệ không
-  if (trip.type !== ticketRequest.type) {
-    throw new ConflictError('Loại vé không hợp lệ cho chuyến đi này')
-  }
+    //Kiểm tra xem loại vé có hợp lệ không
+    if (trip.type !== ticketRequest.type) {
+      throw new ConflictError('Loại vé không hợp lệ cho chuyến đi này')
+    }
 
-  //Kiểm tra xem thời gian yêu cầu vé có hợp lệ không
-  const currentTime = new Date()
-  if (toUTC(currentTime) > trip.startTime) {
-    throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
+    //Kiểm tra xem thời gian yêu cầu vé có hợp lệ không
+    const currentTime = new Date()
+    if (toUTC(currentTime) > trip.startTime) {
+      throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
+    }
+    // Tạo yêu cầu vé mới
+    const newTicketRequest = await ticketRequestRepository.createTicketRequest(ticketRequest)
+    return newTicketRequest
   }
 
   // Tạo yêu cầu vé mới
@@ -124,19 +131,18 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
     throw new NotFoundError('Yêu cầu vé không tồn tại')
   }
 
-  // Kiểm tra thời gian hợp lệ trước khi update
-  const trip = await tripRespository.findTripById(ticketRequest.tripId)
-  if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
-  const currentTime = new Date()
-  if (toUTC(currentTime) > trip.startTime) {
-    throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
-  }
-
   // Nếu xác nhận, tạo mới vé và seatMap trong transaction
   if (updateData.titleRequest === TITLE_TICKET_REQUESTS.BOOK_TICKET) {
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
+      // Kiểm tra thời gian hợp lệ trước khi update
+      const trip = await tripRespository.findTripById(ticketRequest.tripId)
+      if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
+      const currentTime = new Date()
+      if (toUTC(currentTime) > trip.startTime) {
+        throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
+      }
       // Lấy thông tin hãng xe
       const carCompany = await carCompanyRepository.findOne({ _id: trip.carCompanyId })
       if (!carCompany) throw new NotFoundError('Hãng xe không tồn tại')
@@ -217,6 +223,15 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
     }
   } else if (updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET) {
     // Trường hợp huỷ vé
+
+    // Kiểm tra thời gian hợp lệ trước khi update
+    const trip = await tripRespository.findTripById(ticketRequest.tripId)
+    if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
+    const currentTime = new Date()
+    if (toUTC(currentTime) > trip.startTime) {
+      throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
+    }
+
     // Tìm vé
     const ticket = await ticketService.getTicketByUserIdAndTripId(ticketRequest.userId, ticketRequest.tripId)
     if (ticket) {
@@ -231,6 +246,67 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
       ...updateData,
       status: TICKET_STATUS.CANCELLED
     })
+  } else if (updateData.titleRequest === TITLE_TICKET_REQUESTS.REFUND) {
+    // Xử lý hoàn tiền thủ công
+    // Không cần adminAction, chỉ cần truyền status mong muốn (REFUNDED hoặc 'Rejected')
+    const ticketRequest = await ticketRequestRepository.findById(ticketRequestId)
+    if (!ticketRequest) throw new NotFoundError('Yêu cầu vé không tồn tại')
+    if (updateData.status === TICKET_STATUS.REFUNDED) {
+      // Duyệt hoàn tiền
+      const session = await mongoose.startSession()
+      session.startTransaction()
+      try {
+        // Trừ tiền trong tài khoản người dùng
+        const user = await userRepository.findById(ticketRequest.userId)
+        if (!user) throw new NotFoundError('Người dùng không tồn tại')
+        if (!user.bankAccountId) {
+          throw new ConflictError('Người dùng không có tài khoản ngân hàng để hoàn tiền')
+        }
+        const bankAccount = await bankAccountRepository.findById(user.bankAccountId)
+        if (!bankAccount.isVerified) {
+          throw new ConflictError('Tài khoản ngân hàng chưa được xác minh')
+        }
+        user.amount -= ticketRequest.amount
+        if (user.amount < 0) {
+          throw new ConflictError('Số dư tài khoản không đủ để hoàn tiền')
+        }
+
+        await user.save({ session })
+        // Lưu lịch sử hoàn tiền
+        await refundHistoryRepository.createRefundHistory(
+          {
+            userId: user._id,
+            amount: ticketRequest.amount,
+            bankAccountId: user.bankAccountId,
+            status: REFUND_STATUS.COMPLETED,
+            reason: REASON_REFUND.USER_REQUEST
+          },
+          session
+        )
+        // Cập nhật trạng thái ticketRequest
+        const updatedTicketRequest = await ticketRequestRepository.updateTicketRequest(
+          ticketRequestId,
+          {
+            ...updateData,
+            status: TICKET_STATUS.REFUNDED
+          },
+          { session }
+        )
+        await session.commitTransaction()
+        session.endSession()
+        return updatedTicketRequest
+      } catch (err) {
+        await session.abortTransaction()
+        session.endSession()
+        throw err
+      }
+    } else if (updateData.status === TICKET_STATUS.REJECTED) {
+      // Từ chối hoàn tiền
+      return await ticketRequestRepository.updateTicketRequest(ticketRequestId, {
+        ...updateData,
+        status: TICKET_STATUS.REJECTED
+      })
+    }
   } else {
     // Nếu không phải xác nhận, huỷ vé, chỉ update bình thường
     // Kiểm tra đã có vé chưa

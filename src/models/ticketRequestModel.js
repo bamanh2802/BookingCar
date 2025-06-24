@@ -11,7 +11,9 @@ const ticketRequestSchema = new Schema(
     tripId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.TRIP,
-      required: true
+      required: function () {
+        return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
+      }
     },
     titleRequest: {
       type: String,
@@ -20,17 +22,16 @@ const ticketRequestSchema = new Schema(
     },
     price: {
       type: Number,
-      required: true,
+      required: function () {
+        return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
+      },
       min: [0, 'Price cannot be negative']
-    },
-    status: {
-      type: String,
-      enum: [TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED, TICKET_STATUS.CANCELLED],
-      default: TICKET_STATUS.PENDING
     },
     passengerName: {
       type: String,
-      required: [true, 'Fullname is required'],
+      required: function () {
+        return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
+      },
       trim: true,
       maxlength: [
         VALIDATION_RULES.FULLNAME_MAX_LENGTH,
@@ -43,7 +44,9 @@ const ticketRequestSchema = new Schema(
     },
     passengerPhone: {
       type: String,
-      required: [true, 'Phone number is required'],
+      required: function () {
+        return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
+      },
       trim: true,
       match: [VALIDATION_RULES.PHONE_NUMBER_RULE, 'Invalid phone number format']
     },
@@ -53,13 +56,17 @@ const ticketRequestSchema = new Schema(
         {
           code: {
             type: String,
-            required: true,
+            required: function () {
+              return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
+            },
             trim: true,
             maxLength: [3, 'Seat code cannot exceed 3 characters']
           },
           floor: {
             type: Number,
-            required: true
+            required: function () {
+              return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
+            }
           }
         }
       ],
@@ -68,7 +75,30 @@ const ticketRequestSchema = new Schema(
     type: {
       type: String,
       enum: [CAR_TYPES.REGULAR, CAR_TYPES.VIP],
-      required: true
+      required: function () {
+        return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
+      }
+    },
+    amount: {
+      type: Number,
+      required: function () {
+        return this.titleRequest === TITLE_TICKET_REQUESTS.REFUND
+      },
+      min: [0, 'Amount cannot be negative']
+    },
+    reason: {
+      type: String
+    },
+    status: {
+      type: String,
+      enum: [
+        TICKET_STATUS.PENDING,
+        TICKET_STATUS.CONFIRMED,
+        TICKET_STATUS.CANCELLED,
+        TICKET_STATUS.REFUNDED,
+        TICKET_STATUS.REJECTED
+      ],
+      default: TICKET_STATUS.PENDING
     },
     createdBy: {
       type: Schema.Types.ObjectId,
