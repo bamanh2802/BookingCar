@@ -39,7 +39,8 @@ const vehicleSchema = new Schema(
       type: {
         type: String,
         enum: ['bus', 'coach', 'limousine', 'sleeper', 'minivan'],
-        required: true
+        required: true,
+        index: true
       },
       brand: {
         type: String,
@@ -65,13 +66,22 @@ const vehicleSchema = new Schema(
       default: function () {
         return this.seatMap.length
       },
-      min: [0, 'Total seats cannot be negative']
+      min: [0, 'Total seats cannot be negative'],
+      index: true
     }
   },
   {
     timestamps: true
   }
 )
+
+// Enhanced compound indexes for optimal aggregation performance
+vehicleSchema.index({ companyId: 1, status: 1 })
+vehicleSchema.index({ status: 1, 'specifications.type': 1 })
+vehicleSchema.index({ companyId: 1, 'specifications.type': 1 })
+vehicleSchema.index({ status: 1, totalSeats: 1 })
+vehicleSchema.index({ createdAt: 1 })
+vehicleSchema.index({ companyId: 1, licensePlate: 1 })
 
 // Middleware: Tính toán tổng số ghế trước khi lưu
 vehicleSchema.pre('validate', function (next) {
@@ -80,9 +90,5 @@ vehicleSchema.pre('validate', function (next) {
   }
   next()
 })
-
-// Compound index: unique vehicleCode trong scope company
-vehicleSchema.index({ companyId: 1, licensePlate: 1 })
-vehicleSchema.index({ companyId: 1, status: 1 })
 
 export const vehicleModel = mongoose.model(DOCUMENT_NAMES.VEHICLE, vehicleSchema) 

@@ -1,30 +1,24 @@
 import express from 'express'
 import { adminUserController } from '~/controllers/admin/adminUserController'
-import {
-  adminAuth,
-  adminUserCreate,
-  adminUserUpdate,
-  adminUserManagement,
-  adminUserDelete
+import { 
+  adminUserView, 
+  adminUserCreate, 
+  adminUserUpdate, 
+  adminUserDelete 
 } from '~/middlewares/adminMiddleware'
 import { userValidation } from '~/validations/userValidation'
 
 const Router = express.Router()
 
-// Lấy danh sách người dùng
+// Get all users (Admin only)
 Router.route('/')
-  .get(...adminAuth, adminUserController.getUsers)
-  .post(...adminUserCreate, userValidation.createUser, adminUserController.createUser)
+  .get(adminUserView, adminUserController.getUsers)
+  .post(adminUserCreate, userValidation.createUser, adminUserController.createUser)
 
-// Alternative endpoints
-Router.route('/list').get(...adminAuth, adminUserController.getUsers)
-
-Router.route('/create').post(...adminUserCreate, userValidation.createUser, adminUserController.createUser)
-
-// Quản lý người dùng cụ thể
+// User management by ID
 Router.route('/:userId')
-  .get(...adminUserManagement, adminUserController.getUserById)
-  .patch(...adminUserUpdate, userValidation.updateProfile, adminUserController.updateUser)
-  .delete(...adminUserDelete, adminUserController.deleteUser)
+  .get(adminUserView, adminUserController.getUserById)
+  .patch(adminUserUpdate, userValidation.updateProfile, adminUserController.updateUser)
+  .delete(adminUserDelete, adminUserController.deleteUser)
 
 export const adminUserRoutes = Router
