@@ -6,26 +6,30 @@ const ticketRequestSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.USER,
-      required: true
+      required: true,
+      index: true
     },
     tripId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.TRIP,
       required: function () {
         return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
-      }
+      },
+      index: true
     },
     titleRequest: {
       type: String,
       enum: [TITLE_TICKET_REQUESTS.BOOK_TICKET, TITLE_TICKET_REQUESTS.CANCEL_TICKET, TITLE_TICKET_REQUESTS.REFUND],
-      required: true
+      required: true,
+      index: true
     },
     price: {
       type: Number,
       required: function () {
         return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
       },
-      min: [0, 'Price cannot be negative']
+      min: [0, 'Price cannot be negative'],
+      index: true
     },
     passengerName: {
       type: String,
@@ -77,14 +81,16 @@ const ticketRequestSchema = new Schema(
       enum: [CAR_TYPES.REGULAR, CAR_TYPES.VIP],
       required: function () {
         return this.titleRequest !== TITLE_TICKET_REQUESTS.REFUND
-      }
+      },
+      index: true
     },
     amount: {
       type: Number,
       required: function () {
         return this.titleRequest === TITLE_TICKET_REQUESTS.REFUND
       },
-      min: [0, 'Amount cannot be negative']
+      min: [0, 'Amount cannot be negative'],
+      index: true
     },
     reason: {
       type: String
@@ -98,7 +104,8 @@ const ticketRequestSchema = new Schema(
         TICKET_STATUS.REFUNDED,
         TICKET_STATUS.REJECTED
       ],
-      default: TICKET_STATUS.PENDING
+      default: TICKET_STATUS.PENDING,
+      index: true
     },
     createdBy: {
       type: Schema.Types.ObjectId,
@@ -110,5 +117,12 @@ const ticketRequestSchema = new Schema(
     timestamps: true
   }
 )
+
+ticketRequestSchema.index({ status: 1, titleRequest: 1 })
+ticketRequestSchema.index({ status: 1, createdAt: 1 })
+ticketRequestSchema.index({ titleRequest: 1, createdAt: 1 })
+ticketRequestSchema.index({ userId: 1, status: 1 })
+ticketRequestSchema.index({ tripId: 1, status: 1 })
+ticketRequestSchema.index({ createdAt: 1 })
 
 export const ticketRequestModel = mongoose.model(DOCUMENT_NAMES.TICKET_REQUEST, ticketRequestSchema)

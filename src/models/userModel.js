@@ -42,7 +42,8 @@ const userSchema = new Schema(
     roleId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.USER_ROLE,
-      required: [true, 'Role ID is required']
+      required: [true, 'Role ID is required'],
+      index: true // Index for aggregation grouping
     },
     /**
      * parentId: Lưu trữ ID của người dùng đã tạo ra người dùng này.
@@ -55,7 +56,8 @@ const userSchema = new Schema(
     parentId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.USER,
-      default: null
+      default: null,
+      index: true // Index for hierarchy queries
     },
     bankAccountId: {
       type: Schema.Types.ObjectId,
@@ -64,13 +66,19 @@ const userSchema = new Schema(
     },
     amount: {
       type: Number,
-      default: 0
+      default: 0,
+      index: true // Index for amount aggregations
     }
   },
   {
     timestamps: true
   }
 )
+
+// Performance indexes for admin statistics
+userSchema.index({ roleId: 1, createdAt: 1 }) // Compound index for role-based time queries
+userSchema.index({ roleId: 1, amount: 1 }) // Compound index for role-based amount queries
+userSchema.index({ createdAt: 1 }) // Index for time-based filtering
 
 userSchema.pre('save', async function (next) {
   const user = this

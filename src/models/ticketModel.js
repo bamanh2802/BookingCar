@@ -6,12 +6,14 @@ const ticketSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.USER,
-      required: true
+      required: true,
+      index: true
     },
     tripId: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.TRIP,
-      required: true
+      required: true,
+      index: true
     },
     requestId: {
       type: Schema.Types.ObjectId,
@@ -21,12 +23,14 @@ const ticketSchema = new Schema(
     price: {
       type: Number,
       required: [true, 'Price is required'],
-      min: [0, 'Price must be a positive number']
+      min: [0, 'Price must be a positive number'],
+      index: true
     },
     status: {
       type: String,
       enum: [TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED, TICKET_STATUS.CANCELLED, TICKET_STATUS.REFUNDED],
-      default: TICKET_STATUS.PENDING
+      default: TICKET_STATUS.PENDING,
+      index: true
     },
     passengerName: {
       type: String,
@@ -64,7 +68,8 @@ const ticketSchema = new Schema(
     type: {
       type: String,
       enum: [CAR_TYPES.REGULAR, CAR_TYPES.VIP],
-      required: true
+      required: true,
+      index: true
     },
     createdBy: {
       type: Schema.Types.ObjectId,
@@ -73,10 +78,19 @@ const ticketSchema = new Schema(
     },
     commissionPaid: {
       type: Boolean,
-      default: false
+      default: false,
+      index: true
     }
   },
   { timestamps: true }
 )
+
+ticketSchema.index({ status: 1, createdAt: 1 })
+ticketSchema.index({ status: 1, price: 1 })
+ticketSchema.index({ status: 1, type: 1 })
+ticketSchema.index({ tripId: 1, status: 1 })
+ticketSchema.index({ commissionPaid: 1, status: 1 })
+ticketSchema.index({ createdAt: 1 })
+ticketSchema.index({ type: 1, price: 1 })
 
 export const ticketModel = mongoose.model(DOCUMENT_NAMES.TICKET, ticketSchema)

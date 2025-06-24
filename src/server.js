@@ -6,6 +6,7 @@ import helmet from 'helmet'
 import { env } from '~/config/environment'
 import { instanceMongodb } from '~/config/mongodb'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
+import { responseTimeMiddleware } from '~/middlewares/responseTimeMiddleware'
 import { API_V1 } from '~/routes/v1'
 import { initializeRolesAndAdmin } from '~/scripts/initRoles'
 import logger from '~/utils/logger'
@@ -26,6 +27,9 @@ const createApp = () => {
   app.use(cors(corsOptions))
   app.use(express.json({ limit: '10kb' })) // Giới hạn kích thước body request
   app.use(cookieParser())
+
+  // Response time monitoring middleware
+  app.use(responseTimeMiddleware)
 
   // Middleware bảo mật
   app.use(helmet()) // Bảo vệ các HTTP headers

@@ -10,22 +10,22 @@ import { catchAsync } from '~/utils/catchAsync'
 const login = catchAsync(async (req, res) => {
   const userInfo = await authService.login(req.body)
 
-  // Thiết lập cookies
+  // Thiết lập cookies với shorter expiry for admin
   res.cookie('accessToken', userInfo.accessToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'none',
-    maxAge: ms('14 days')
+    maxAge: ms('1 day') // Shorter for admin security
   })
 
   res.cookie('refreshToken', userInfo.refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'none',
-    maxAge: ms('14 days')
+    maxAge: ms('7 days') // Shorter refresh token for admin
   })
 
-  return res.status(200).json(ApiResponse.success(userInfo, 'Đăng nhập thành công'))
+  return res.status(200).json(ApiResponse.success(userInfo, 'Admin đăng nhập thành công'))
 })
 
 /**
@@ -39,15 +39,40 @@ const refreshToken = catchAsync(async (req, res) => {
 
   const result = await authService.refreshToken(refreshToken)
 
-  // Cập nhật access token mới trong cookie
+  // Cập nhật access token mới trong cookie với shorter expiry
   res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'none',
-    maxAge: ms('14 days')
+    maxAge: ms('1 day') // Shorter for admin security
   })
 
   return res.status(200).json(ApiResponse.success(result, 'Refresh token thành công'))
+})
+
+/**
+ * Admin logout - invalidate tokens
+ */
+const logout = catchAsync(async (req, res) => {
+  // Clear cookies immediately
+  res.clearCookie('accessToken', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none'
+  })
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none'
+  })
+
+  // TODO: Add to blacklist when Redis is integrated
+  // if (req.adminToken) {
+  //   await addTokenToBlacklist(req.adminToken)
+  // }
+
+  return res.status(200).json(ApiResponse.success(null, 'Admin đăng xuất thành công'))
 })
 
 /**
@@ -65,12 +90,13 @@ const getProfile = catchAsync(async (req, res) => {
 const updateProfile = catchAsync(async (req, res) => {
   const userId = req.user._id
   const updatedUser = await userService.updateUser(userId, req.body)
-  return res.status(200).json(ApiResponse.success(updatedUser, 'Cập nhật thông tin thành công'))
+  return res.status(200).json(ApiResponse.success(updatedUser, 'Cập nhật thông tin admin thành công'))
 })
 
 export const adminAuthController = {
   login,
   refreshToken,
+  logout,
   getProfile,
   updateProfile
 } 
