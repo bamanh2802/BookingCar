@@ -241,7 +241,7 @@ const checkViewTicketRequestById = catchAsync(async (req, res, next) => {
 
   const ticketRequest = await ticketRequestRepository.findTicketRequestById(ticketRequestId)
   if (!ticketRequest || ticketRequest.userId.toString() !== userId) {
-    return res.status(403).json({ message: 'Bạn không có quyền xem yêu cầu vé này.' })
+    return res.status(403).json({ message: 'Bạn không có quyền thực hiện hành động cho yêu cầu vé này.' })
   }
   next()
 })
