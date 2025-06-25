@@ -5,7 +5,7 @@ import { toUTC } from '~/utils/timeTranfer'
 import mongoose from 'mongoose'
 import carCompanyRepository from '~/repositories/carCompanyRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
-import ticketService from './ticketService'
+import { ticketService } from './ticketService'
 import { REASON_REFUND, REFUND_STATUS, TICKET_STATUS, TITLE_TICKET_REQUESTS, USER_ROLES } from '~/constants'
 import userRepository from '~/repositories/userRepository'
 import { pickTrip } from '~/utils/formatter'
@@ -411,12 +411,13 @@ const deleteTicketRequest = async (ticketRequestId) => {
     message: 'Xóa yêu cầu vé thành công'
   }
 }
+
 export const ticketRequestService = {
   createTicketRequest,
   getTicketRequests,
+  getTicketRequestsByUserId,
+  getTicketRequestsByTripId,
   getTicketRequestById,
   updateTicketRequest,
-  deleteTicketRequest,
-  getTicketRequestsByUserId,
-  getTicketRequestsByTripId
+  deleteTicketRequest
 }

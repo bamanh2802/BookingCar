@@ -101,6 +101,45 @@ class CommissionRepository extends BaseRepository {
     const newCommission = new this.model({ roleId, percent })
     return newCommission.save()
   }
+
+  /**
+   * Tạo mới hoa hồng
+   */
+  async create(data) {
+    return this.createEntity(data)
+  }
+
+  /**
+   * Xóa hoa hồng theo ID
+   */
+  async deleteById(id) {
+    return this.delete(id)
+  }
+
+  /**
+   * Lấy thống kê hoa hồng
+   */
+  async getStats(filter = {}) {
+    // Mock stats for now
+    return {
+      totalCommissions: await this.count(filter),
+      totalAmount: 0,
+      pendingAmount: 0,
+      paidAmount: 0
+    }
+  }
+
+  /**
+   * Tính toán hoa hồng cho khoảng thời gian
+   */
+  async calculateForPeriod(startDate, endDate) {
+    // Mock calculation for now
+    return {
+      period: { startDate, endDate },
+      totalCalculated: 0,
+      commissions: []
+    }
+  }
 }
 
 const commissionRepository = new CommissionRepository()

@@ -54,11 +54,32 @@ const verifyBankAccount = async (accountId, verificationData) => {
   return await bankAccountRepository.updateVerificationStatus(accountId, verificationData)
 }
 
+const getBankAccountById = async (accountId) => {
+  const bankAccount = await bankAccountRepository.findById(accountId)
+  if (!bankAccount) {
+    throw new Error('Tài khoản ngân hàng không tồn tại')
+  }
+  return bankAccount
+}
+
+const getBankAccountStats = async () => {
+  // Lấy thống kê tài khoản ngân hàng
+  return await bankAccountRepository.getStats()
+}
+
+const getPopularBanks = async () => {
+  // Lấy danh sách ngân hàng phổ biến
+  return await bankAccountRepository.getPopularBanks()
+}
+
 export const bankAccountService = {
   createBankAccount,
   getAllBankAccounts,
   updateBankAccount,
   deleteBankAccount,
   getBankAccountByUserId,
-  verifyBankAccount
+  getBankAccountById,
+  verifyBankAccount,
+  getBankAccountStats,
+  getPopularBanks
 }
