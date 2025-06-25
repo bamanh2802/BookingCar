@@ -4,6 +4,7 @@ import ApiResponse from '~/utils/ApiResponse'
 
 import ticketService from '~/services/ticketService'
 import { USER_ROLES } from '~/constants'
+import { userService } from '~/services/userService'
 
 /**
  * Tạo mới vé
@@ -16,14 +17,25 @@ const createTicket = catchAsync(async (req, res) => {
 /**
  * Lấy danh sách vé (dành cho admin, agent lv1,agent lv2)
  */
-const getTickets = catchAsync(async (req, res) => {
+const getTicketsCreatedBy = catchAsync(async (req, res) => {
   const { page, limit } = req.query
   let filter = req.query.filter || {}
-  //Lấy danh sách vé dc tạo bởi agent lv2 (dành cho agent lv2)
+
   if (req.user.roleName === USER_ROLES.AGENT_LV2) {
+    // Nếu là AGENT_LV2, chỉ lấy vé do chính user đó tạo
     filter.createdBy = req.user._id
+  } else if (req.user.roleName === USER_ROLES.AGENT_LV1) {
+    // Nếu là AGENT_LV1, lấy vé do chính user đó tạo và các AGENT_LV2 do user này quản lý
+    // Giả sử có hàm userService.getAgentLv2ByAgentLv1Id trả về danh sách AGENT_LV2 do AGENT_LV1 này quản lý
+    const agentLv2List = await userService.getAgentLv2ByAgentLv1Id(req.user._id)
+    if (!agentLv2List || agentLv2List.length === 0) {
+      // Nếu không có AGENT_LV2 nào, chỉ lấy vé do chính user đó tạo
+      filter.createdBy = req.user._id
+    }
+    const agentLv2Ids = agentLv2List.map((agent) => agent._id)
+    filter.createdBy = [req.user._id, ...agentLv2Ids]
   }
-  const tickets = await ticketService.getTickets(filter, page, limit)
+  const tickets = await ticketService.getTicketsCreatedBy(filter, page, limit)
   return res.status(StatusCodes.OK).json(ApiResponse.success(tickets, 'Lấy danh sách vé thành công'))
 })
 
@@ -86,7 +98,7 @@ const getTicketsByUserIdAndTripId = catchAsync(async (req, res) => {
 })
 export const ticketController = {
   createTicket,
-  getTickets,
+  getTicketsCreatedBy,
   getTicketById,
   updateTicket,
   deleteTicket,

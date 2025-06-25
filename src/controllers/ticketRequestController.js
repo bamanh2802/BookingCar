@@ -17,8 +17,15 @@ const createTicketRequest = catchAsync(async (req, res) => {
  * Lấy danh sách yêu cầu vé
  */
 const getTicketRequests = catchAsync(async (req, res) => {
-  const { page, limit } = req.query
-  const filter = req.query.filter || {}
+  const { page, limit, ...restQuery } = req.query
+  let filter = req.query.filter || {}
+
+  // Hỗ trợ truyền trực tiếp nhiều trường filter qua query string
+  const allowedFields = ['status', 'userId', 'tripId', 'createdAt', 'updatedAt', 'tittleRequest']
+  allowedFields.forEach(field => {
+    if (restQuery[field]) filter[field] = restQuery[field]
+  })
+
   const ticketRequests = await ticketRequestService.getTicketRequests(filter, page, limit)
   return res.status(StatusCodes.OK).json(ApiResponse.success(ticketRequests, 'Lấy danh sách yêu cầu vé thành công'))
 })
@@ -60,6 +67,12 @@ const getTicketRequestById = catchAsync(async (req, res) => {
  */
 const updateTicketRequest = catchAsync(async (req, res) => {
   const { ticketRequestId } = req.params
+  if (req.userRole?.roleName === 'Client') {
+    // Xoá trường status, tittleRequest nếu có khi người dùng là Client
+    delete req.body.status
+    delete req.body.tittleRequest
+  }
+
   const updatedTicketRequest = await ticketRequestService.updateTicketRequest(ticketRequestId, req.body)
   return res.status(StatusCodes.OK).json(ApiResponse.success(updatedTicketRequest, 'Cập nhật yêu cầu vé thành công'))
 })

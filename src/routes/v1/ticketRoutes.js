@@ -9,7 +9,11 @@ import { ticketValidation } from '~/validations/ticketValidation'
  * Lấy danh sách vé (dành cho admin, agent 1, agent 2)
  */
 Router.route('/')
-  .get(authMiddleware.authenticate, authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKETS), ticketController.getTickets)
+  .get(
+    authMiddleware.authenticate,
+    authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKETS),
+    ticketController.getTicketsCreatedBy
+  )
 
   .post(
     authMiddleware.authenticate,
@@ -21,6 +25,12 @@ Router.route('/')
 /**
  *
  */
+
+Router.route('/create-by-agent').get(
+  authMiddleware.authenticate,
+  authMiddleware.hasPermission(PERMISSIONS.VIEW_TICKETS),
+  ticketController.getTicketsCreatedBy
+)
 
 Router.route('/:ticketId')
   .get(
