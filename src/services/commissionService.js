@@ -136,8 +136,47 @@ const payCommissionForTicket = async (ticket, session) => {
   }
 }
 
+const getCommissions = async (filter = {}, page = 1, limit = 10) => {
+  return await commissionRepository.findWithPagination(filter, page, limit)
+}
+
+const createCommission = async (commissionData) => {
+  return await commissionRepository.createCommission(commissionData)
+}
+
+const getCommissionById = async (commissionId) => {
+  const commission = await commissionRepository.findById(commissionId)
+  if (!commission) {
+    throw new NotFoundError('Không tìm thấy hoa hồng')
+  }
+  return commission
+}
+
+const deleteCommission = async (commissionId) => {
+  const commission = await commissionRepository.findById(commissionId)
+  if (!commission) {
+    throw new NotFoundError('Không tìm thấy hoa hồng')
+  }
+  return await commissionRepository.deleteById(commissionId)
+}
+
+const getCommissionStats = async (filter = {}) => {
+  return await commissionRepository.getStats(filter)
+}
+
+const calculateCommissionsForPeriod = async (startDate, endDate) => {
+  // Logic tính toán hoa hồng cho khoảng thời gian
+  return await commissionRepository.calculateForPeriod(startDate, endDate)
+}
+
 export const commissionService = {
   updateCommission,
   getAllCommissionsWithRoles,
-  payCommissionForTicket
+  payCommissionForTicket,
+  getCommissions,
+  createCommission,
+  getCommissionById,
+  deleteCommission,
+  getCommissionStats,
+  calculateCommissionsForPeriod
 }

@@ -411,12 +411,13 @@ const deleteTicketRequest = async (ticketRequestId) => {
     message: 'Xóa yêu cầu vé thành công'
   }
 }
+
 export const ticketRequestService = {
   createTicketRequest,
   getTicketRequests,
+  getTicketRequestsByUserId,
+  getTicketRequestsByTripId,
   getTicketRequestById,
   updateTicketRequest,
-  deleteTicketRequest,
-  getTicketRequestsByUserId,
-  getTicketRequestsByTripId
+  deleteTicketRequest
 }

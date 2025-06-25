@@ -150,6 +150,46 @@ class BankAccountRepository extends BaseRepository {
     const account = await this.getBankAccountsByUserId(userId)
     return !!account
   }
+
+  /**
+   * Lấy thống kê tài khoản ngân hàng
+   */
+  async getStats() {
+    const total = await this.count()
+    const verified = await this.count({ isVerified: true })
+    const unverified = await this.count({ isVerified: false })
+    
+    return {
+      total,
+      verified,
+      unverified,
+      verificationRate: total > 0 ? Math.round((verified / total) * 100) : 0
+    }
+  }
+
+  /**
+   * Lấy danh sách ngân hàng phổ biến
+   */
+  async getPopularBanks() {
+    const pipeline = [
+      {
+        $group: {
+          _id: '$bankName',
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+      {
+        $project: {
+          bankName: '$_id',
+          count: 1,
+          _id: 0
+        }
+      }
+    ]
+    return this.model.aggregate(pipeline)
+  }
 }
 
 const bankAccountRepository = new BankAccountRepository()

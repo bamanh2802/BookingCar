@@ -125,15 +125,50 @@ export const adminAuth = [adminAuthenticate]
 /**
  * Enhanced admin middlewares for specific admin operations
  */
+// User management permissions
 export const adminUserManagement = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_USERS, PERMISSIONS.CREATE_USER, PERMISSIONS.UPDATE_USER, PERMISSIONS.DELETE_USER)]
-
 export const adminUserCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_USER)]
-
 export const adminUserUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_USER)]
-
 export const adminUserDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_USER)]
-
 export const adminUserView = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_USERS)]
+
+// Role management permissions
+export const adminRoleView = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_ROLES)]
+export const adminRoleCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_ROLE)]
+export const adminRoleUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_ROLE)]
+export const adminRoleDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_ROLE)]
+export const adminRolePermissions = [adminAuthenticate, adminHasPermission(PERMISSIONS.MANAGE_ROLE_PERMISSIONS)]
+
+// Vehicle management permissions
+export const adminVehicleView = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_VEHICLES)]
+export const adminVehicleCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_VEHICLE)]
+export const adminVehicleUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_VEHICLE)]
+export const adminVehicleDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_VEHICLE)]
+
+// Trip management permissions
+export const adminTripView = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_TRIPS)]
+export const adminTripCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_TRIP)]
+export const adminTripUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_TRIP)]
+export const adminTripDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_TRIP)]
+
+// Ticket management permissions
+export const adminTicketView = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_TICKETS)]
+export const adminTicketCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_TICKET)]
+export const adminTicketUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_TICKET)]
+export const adminTicketDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_TICKET)]
+
+// Ticket request management permissions
+export const adminTicketRequestView = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_TICKET_REQUESTS)]
+export const adminTicketRequestCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_TICKET_REQUEST)]
+export const adminTicketRequestUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_TICKET_REQUEST)]
+export const adminTicketRequestDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_TICKET_REQUEST)]
+
+// Bank account management permissions
+export const adminBankAccountView = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_BANK_ACCOUNT)]
+export const adminBankAccountCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_BANK_ACCOUNT)]
+export const adminBankAccountUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_BANK_ACCOUNT)]
+export const adminBankAccountDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_BANK_ACCOUNT)]
+export const adminBankAccountVerify = [adminAuthenticate, adminHasPermission(PERMISSIONS.VERIFY_BANK_ACCOUNT)]
 
 // For admin-only endpoints (authentication only, no specific permissions)
 export const adminOnly = adminAuth

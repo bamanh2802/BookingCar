@@ -214,7 +214,7 @@ const getTicketByUserIdAndTripId = async (userId, tripId) => {
   return ticket
 }
 
-export default {
+export const ticketService = {
   createTicket,
   getTickets,
   getTicketById,
