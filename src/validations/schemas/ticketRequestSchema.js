@@ -138,6 +138,14 @@ export const ticketRequestUpdateSchema = Joi.object({
     .messages({
       'any.only': 'titleRequest không hợp lệ'
     }),
+  ticketId: Joi.when('titleRequest', {
+    is: Joi.valid(TITLE_TICKET_REQUESTS.CANCEL_TICKET),
+    then: Joi.string().required().messages({
+      'string.empty': 'Ticket ID không được để trống',
+      'any.required': 'Ticket ID là trường bắt buộc'
+    }),
+    otherwise: Joi.string().optional()
+  }),
   seats: Joi.array()
     .items(
       Joi.object({
@@ -152,9 +160,49 @@ export const ticketRequestUpdateSchema = Joi.object({
     .messages({
       'array.base': 'Seats must be an array'
     }),
-  passengerName: Joi.string(),
-  passengerPhone: Joi.string(),
-  type: Joi.string().valid(CAR_TYPES.REGULAR, CAR_TYPES.VIP),
-  amount: Joi.number().min(0),
+  passengerName: Joi.when('titleRequest', {
+    is: Joi.valid(TITLE_TICKET_REQUESTS.CANCEL_TICKET),
+    then: Joi.string().optional(),
+    otherwise: Joi.string()
+      .required()
+      .min(VALIDATION_RULES.FULLNAME_MIN_LENGTH)
+      .max(VALIDATION_RULES.FULLNAME_MAX_LENGTH)
+      .trim()
+      .messages({
+        'string.empty': 'Họ tên không được để trống',
+        'string.min': `Họ tên phải có ít nhất ${VALIDATION_RULES.FULLNAME_MIN_LENGTH} ký tự`,
+        'string.max': `Họ tên không được vượt quá ${VALIDATION_RULES.FULLNAME_MAX_LENGTH} ký tự`,
+        'any.required': 'Họ tên là trường bắt buộc'
+      })
+  }),
+
+  passengerPhone: Joi.when('titleRequest', {
+    is: Joi.valid(TITLE_TICKET_REQUESTS.CANCEL_TICKET),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required().pattern(VALIDATION_RULES.PHONE_NUMBER_RULE).messages({
+      'string.empty': 'Số điện thoại không được để trống',
+      'string.pattern.base': 'Số điện thoại không hợp lệ',
+      'any.required': 'Số điện thoại là trường bắt buộc'
+    })
+  }),
+
+  type: Joi.when('titleRequest', {
+    is: Joi.valid(TITLE_TICKET_REQUESTS.CANCEL_TICKET),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().valid(CAR_TYPES.REGULAR, CAR_TYPES.VIP).required().messages({
+      'any.only': 'Type must be either REGULAR or VIP',
+      'any.required': 'Type is required'
+    })
+  }),
+
+  amount: Joi.when('titleRequest', {
+    is: Joi.valid(TITLE_TICKET_REQUESTS.CANCEL_TICKET),
+    then: Joi.number().required().min(0).messages({
+      'number.base': 'Số tiền hoàn không hợp lệ',
+      'number.min': 'Số tiền hoàn phải >= 0',
+      'any.required': 'Số tiền hoàn là trường bắt buộc'
+    }),
+    otherwise: Joi.number().optional()
+  }),
   reason: Joi.string().optional()
 })
