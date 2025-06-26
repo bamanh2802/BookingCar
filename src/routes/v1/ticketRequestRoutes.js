@@ -29,12 +29,14 @@ Router.route('/:ticketRequestId')
   .patch(
     authMiddleware.authenticate,
     authMiddleware.hasPermission(PERMISSIONS.UPDATE_TICKET_REQUEST),
+    authMiddleware.checkViewTicketRequestById,
     ticketRequestValidation.updateTicketRequest,
     ticketRequestController.updateTicketRequest
   )
   .delete(
     authMiddleware.authenticate,
     authMiddleware.hasPermission(PERMISSIONS.DELETE_TICKET_REQUEST),
+    authMiddleware.checkViewTicketRequestById,
     ticketRequestController.deleteTicketRequest
   )
 

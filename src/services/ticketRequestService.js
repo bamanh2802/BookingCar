@@ -224,16 +224,17 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
   } else if (updateData.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET) {
     // Trường hợp huỷ vé
 
+    //Kiểm tra xem vé có tồn tại không
+    const ticket = await ticketService.getTicketById(ticketRequest.ticketId)
+
     // Kiểm tra thời gian hợp lệ trước khi update
-    const trip = await tripRespository.findTripById(ticketRequest.tripId)
+    const trip = await tripRespository.findTripById(ticket.tripId)
     if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')
     const currentTime = new Date()
     if (toUTC(currentTime) > trip.startTime) {
       throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
     }
 
-    // Tìm vé
-    const ticket = await ticketService.getTicketByUserIdAndTripId(ticketRequest.userId, ticketRequest.tripId)
     if (ticket) {
       // Gọi updateTicket để xử lý huỷ vé và cập nhật seatMap, trip
       await ticketService.updateTicket(ticket._id, {
@@ -244,6 +245,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
     // Cập nhật trạng thái ticketRequest
     return await ticketRequestRepository.updateTicketRequest(ticketRequestId, {
       ...updateData,
+      ticket,
       status: TICKET_STATUS.CANCELLED
     })
   } else if (updateData.titleRequest === TITLE_TICKET_REQUESTS.REFUND) {
