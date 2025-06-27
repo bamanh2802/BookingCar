@@ -53,4 +53,15 @@ Router.route('/trip/:tripId').get(
   authMiddleware.checkViewTripByUserRole,
   ticketRequestController.getTicketRequestsByTripId
 )
+
+/**
+ * yêu cầu huỷ vé
+ *
+ */
+Router.route('/cancel-ticket/').post(
+  authMiddleware.authenticate,
+  authMiddleware.hasPermission(PERMISSIONS.CREATE_TICKET_REQUEST),
+  ticketRequestValidation.cancelTicketRequest,
+  ticketRequestController.cancelTicketRequest
+)
 export const ticketRequestRoutes = Router

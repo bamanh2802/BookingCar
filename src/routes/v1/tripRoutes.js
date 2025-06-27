@@ -7,7 +7,7 @@ import { tripValidation } from '~/validations/tripValidation'
 const Router = express.Router()
 
 Router.route('/')
-  .get(authMiddleware.authenticate, tripController.getTrips)
+  .get(tripController.getTrips)
   .post(
     authMiddleware.authenticate,
     authMiddleware.hasPermission(PERMISSIONS.CREATE_TRIP),

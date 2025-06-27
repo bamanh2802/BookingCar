@@ -80,6 +80,16 @@ const ticketSchema = new Schema(
       type: Boolean,
       default: false,
       index: true
+    },
+    pickupStation: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    dropoffStation: {
+      type: String,
+      trim: true,
+      default: null
     }
   },
   { timestamps: true }

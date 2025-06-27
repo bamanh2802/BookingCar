@@ -2,9 +2,9 @@ import { catchAsync } from '~/utils/catchAsync'
 import { StatusCodes } from 'http-status-codes'
 import ApiResponse from '~/utils/ApiResponse'
 
-import ticketService from '~/services/ticketService'
 import { USER_ROLES } from '~/constants'
 import { userService } from '~/services/userService'
+import { ticketService } from '~/services/ticketService'
 
 /**
  * Tạo mới vé
@@ -35,7 +35,7 @@ const getTicketsCreatedBy = catchAsync(async (req, res) => {
     const agentLv2Ids = agentLv2List.map((agent) => agent._id)
     filter.createdBy = [req.user._id, ...agentLv2Ids]
   }
-  const tickets = await ticketService.getTicketsCreatedBy(filter, page, limit)
+  const tickets = await ticketService.getTickets(filter, page, limit)
   return res.status(StatusCodes.OK).json(ApiResponse.success(tickets, 'Lấy danh sách vé thành công'))
 })
 
@@ -96,6 +96,7 @@ const getTicketsByUserIdAndTripId = catchAsync(async (req, res) => {
     .status(StatusCodes.OK)
     .json(ApiResponse.success(tickets, 'Lấy danh sách vé của người dùng và chuyến đi thành công'))
 })
+
 export const ticketController = {
   createTicket,
   getTicketsCreatedBy,

@@ -22,7 +22,7 @@ const getTicketRequests = catchAsync(async (req, res) => {
 
   // Hỗ trợ truyền trực tiếp nhiều trường filter qua query string
   const allowedFields = ['status', 'userId', 'tripId', 'createdAt', 'updatedAt', 'tittleRequest']
-  allowedFields.forEach(field => {
+  allowedFields.forEach((field) => {
     if (restQuery[field]) filter[field] = restQuery[field]
   })
 
@@ -89,6 +89,15 @@ const deleteTicketRequest = catchAsync(async (req, res) => {
   )
 })
 
+/**
+ * Yêu cầu hủy vé
+ */
+const cancelTicketRequest = catchAsync(async (req, res) => {
+  const currentUser = req.user
+  const ticketRequest = await ticketRequestService.createTicketRequest(req.body, currentUser)
+  return res.status(StatusCodes.CREATED).json(ApiResponse.created(ticketRequest, 'Yêu cầu hủy vé thành công'))
+})
+
 export const ticketRequestController = {
   createTicketRequest,
   getTicketRequests,
@@ -96,5 +105,6 @@ export const ticketRequestController = {
   updateTicketRequest,
   deleteTicketRequest,
   getTicketRequestsByUserId,
-  getTicketRequestsByTripId
+  getTicketRequestsByTripId,
+  cancelTicketRequest
 }
