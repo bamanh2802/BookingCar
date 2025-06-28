@@ -111,11 +111,55 @@ class TripRespository extends BaseRepository {
   /**
    * Lấy tất cả chuyến đi với phân trang
    */
-  async findAllWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
+  async findAllTripWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
     const skip = (page - 1) * limit
 
-    const [results, total] = await Promise.all([this.findAll(filter, '', { skip, limit, sort }), this.count(filter)])
+    const pipeline = [
+      { $match: filter },
+      { $sort: sort },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'carcompanies',
+          let: { carCompanyId: '$carCompanyId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$_id', '$$carCompanyId'] }
+              }
+            }
+          ],
+          as: 'carCompanyInfo'
+        }
+      },
+      { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'seatmaps',
+          let: { seatMapId: '$seatMapId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$_id', '$$seatMapId'] }
+              }
+            },
+            {
+              $project: {
+                seats: 1,
+                totalBookedSeats: 1
+              }
+            }
+          ],
+          as: 'bookedSeats'
+        }
+      },
+      { $unwind: { path: '$bookedSeats', preserveNullAndEmptyArrays: true } }
+      // Có thể thêm $project ở đây nếu muốn
+    ]
 
+    const results = await this.model.aggregate(pipeline)
+    const total = await this.count(filter)
     return {
       results,
       pagination: {

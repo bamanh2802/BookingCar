@@ -12,8 +12,15 @@ import { commissionService } from './commissionService'
 /**
  * Lấy danh sách chuyến đi theo ngày hiện tại
  */
-const getTrips = async (filter = {}, page = 1, limit = 10) => {
-  const trips = await tripRespository.findAllWithPagination(filter, page, limit)
+const getTrips = async (reqQuery = {}, page = 1, limit = 10) => {
+  const { day, ...otherFilters } = reqQuery
+  let filter = { ...otherFilters }
+
+  if (day) {
+    const { startOfDay, endOfDay } = dayRangeUTC(day)
+    filter.startTime = { $gte: startOfDay, $lte: endOfDay }
+  }
+  const trips = await tripRespository.findAllTripWithPagination(filter, page, limit)
   return trips
 }
 

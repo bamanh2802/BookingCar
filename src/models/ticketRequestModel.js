@@ -23,6 +23,15 @@ const ticketRequestSchema = new Schema(
       required: true,
       index: true
     },
+    ticketId: {
+      type: Schema.Types.ObjectId,
+      ref: DOCUMENT_NAMES.TICKET,
+      required: function () {
+        return this.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET
+      },
+      default: null,
+      index: true
+    },
     price: {
       type: Number,
       required: function () {
@@ -110,6 +119,16 @@ const ticketRequestSchema = new Schema(
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: DOCUMENT_NAMES.USER,
+      default: null
+    },
+    pickupStation: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    dropoffStation: {
+      type: String,
+      trim: true,
       default: null
     }
   },

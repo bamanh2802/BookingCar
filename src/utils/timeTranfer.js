@@ -26,9 +26,8 @@ export const toLocalTime = (utcDateTime) => {
 }
 
 export const dayRangeUTC = (day) => {
-  const startOfDay = dayjs(day).utc().startOf('day').toDate()
-
-  const endOfDay = dayjs(day).utc().endOf('day').add(1, 'millisecond').toDate()
+  const startOfDay = dayjs.utc(day).startOf('day').toDate()
+  const endOfDay = dayjs.utc(day).endOf('day').add(1, 'millisecond').toDate()
 
   return { startOfDay, endOfDay }
 }

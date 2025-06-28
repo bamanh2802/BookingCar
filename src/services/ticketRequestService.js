@@ -11,17 +11,48 @@ import userRepository from '~/repositories/userRepository'
 import { pickTrip } from '~/utils/formatter'
 import refundHistoryRepository from '~/repositories/refundHistoryRepository'
 import bankAccountRepository from '~/repositories/bankAccountRepository'
+import ticketRepository from '~/repositories/ticketRepository'
 /**
  * Tạo yêu cầu vé mới
  */
 
 const createTicketRequest = async (ticketRequest, currentUser) => {
-  //Kiểm tra xem người dùng có tồn tại hay không
-  const user = await userRepository.findById(ticketRequest.userId)
-  if (!user) throw new ConflictError('Người dùng này không tồn tại')
+  if (ticketRequest.titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET) {
+    //Kiểm tra xem yêu cầu huỷ vé đã tồn tại chưa
+    const existingCancelTicketRequest = await ticketRequestRepository.findOne({
+      ticketId: ticketRequest.ticketId,
+      titleRequest: TITLE_TICKET_REQUESTS.CANCEL_TICKET
+    })
+    if (existingCancelTicketRequest) {
+      throw new ConflictError('Yêu cầu huỷ vé đã tồn tại cho chuyến đi này')
+    }
 
-  if (currentUser.roleName !== USER_ROLES.CLIENT && String(currentUser._id) !== String(user._id)) {
-    ticketRequest.createdBy = currentUser._id
+    // Kiem tra xem vé có tồn tại không
+    const ticket = await ticketRepository.findTicketById(ticketRequest.ticketId)
+    if (!ticket) {
+      throw new NotFoundError('Vé không tồn tại')
+    }
+
+    //Kiểm tra xem chỗ ngồi muốn huỷ có trùng với vé đã đặt không
+    const existingSeats = ticket.seats.map((seat) => `${seat.code}_${seat.floor}`)
+    const requestedSeats = ticketRequest.seats.map((seat) => `${seat.code}_${seat.floor}`)
+    const duplicatedSeats = requestedSeats.filter((seat) => existingSeats.includes(seat))
+    // Nếu không có ghế nào trùng, trả về lỗi
+    if (duplicatedSeats.length === 0) {
+      throw new ConflictError('Không có ghế nào trùng với vé đã đặt')
+    }
+    const newTicketRequestData = {
+      ...ticketRequest,
+      userId: ticket.userId,
+      tripId: ticket.tripId,
+      price: ticket.price,
+      passengerName: ticket.passengerName,
+      passengerPhone: ticket.passengerPhone,
+      type: ticket.type,
+      seats: ticketRequest.seats,
+      status: TICKET_STATUS.PENDING
+    }
+    return await ticketRequestRepository.createTicketRequest(newTicketRequestData)
   }
 
   if (ticketRequest.titleRequest !== TITLE_TICKET_REQUESTS.REFUND) {
@@ -46,6 +77,13 @@ const createTicketRequest = async (ticketRequest, currentUser) => {
     return newTicketRequest
   }
 
+  //Kiểm tra xem người dùng có tồn tại hay không
+  const user = await userRepository.findById(ticketRequest.userId)
+  if (!user) throw new ConflictError('Người dùng này không tồn tại')
+
+  if (currentUser.roleName !== USER_ROLES.CLIENT && String(currentUser._id) !== String(user._id)) {
+    ticketRequest.createdBy = currentUser._id
+  }
   // Tạo yêu cầu vé mới
   const newTicketRequest = await ticketRequestRepository.createTicketRequest(ticketRequest)
   return newTicketRequest
@@ -193,7 +231,9 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
           seats: requestedSeats,
           type: ticketRequest.type,
           passengerName: ticketRequest.passengerName,
-          passengerPhone: ticketRequest.passengerPhone
+          passengerPhone: ticketRequest.passengerPhone,
+          pickupStation: ticketRequest.pickupStation,
+          dropoffStation: ticketRequest.dropoffStation
         },
         { session }
       )
@@ -225,8 +265,8 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
     // Trường hợp huỷ vé
 
     //Kiểm tra xem vé có tồn tại không
-    const ticket = await ticketService.getTicketById(ticketRequest.ticketId)
 
+    const ticket = await ticketService.getTicketById(ticketRequest.ticketId)
     // Kiểm tra thời gian hợp lệ trước khi update
     const trip = await tripRespository.findTripById(ticket.tripId)
     if (!trip) throw new NotFoundError('Chuyến đi không tồn tại')

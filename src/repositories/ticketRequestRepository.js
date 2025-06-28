@@ -19,6 +19,8 @@ class TicketRequestRepository extends BaseRepository {
    * @param {String} ticketRequestId - ID của yêu cầu vé
    */
   async findTicketRequestById(ticketRequestId) {
+    // Kiểm tra ObjectId hợp lệ
+    if (!Types.ObjectId.isValid(ticketRequestId)) return null
     const pipeline = [
       { $match: { _id: new Types.ObjectId(ticketRequestId) } },
       {
@@ -29,7 +31,7 @@ class TicketRequestRepository extends BaseRepository {
           as: 'tripInfo'
         }
       },
-      { $unwind: '$tripInfo' },
+      { $unwind: { path: '$tripInfo', preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'carcompanies',
@@ -38,7 +40,7 @@ class TicketRequestRepository extends BaseRepository {
           as: 'carCompanyInfo'
         }
       },
-      { $unwind: '$carCompanyInfo' },
+      { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
       {
         $project: {
           'carCompanyInfo.seatMap': 0
@@ -47,9 +49,7 @@ class TicketRequestRepository extends BaseRepository {
     ]
 
     const result = await this.model.aggregate(pipeline)
-
-    // Vì chỉ truy vấn 1 ticketRequest theo id → nên lấy phần tử đầu tiên
-    return result[0] || []
+    return result[0] || null
   }
 
   /**

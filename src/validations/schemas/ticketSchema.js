@@ -75,7 +75,10 @@ const ticketSchema = Joi.object({
     .messages({
       'any.only': `Type must be either ${CAR_TYPES.REGULAR} or ${CAR_TYPES.VIP}`,
       'any.required': 'Type is required'
-    })
+    }),
+
+  pickupStation: Joi.string().optional(),
+  dropoffStation: Joi.string().optional()
 })
 
 /**
@@ -112,7 +115,10 @@ const ticketUpdateSchema = Joi.object({
     .valid(CAR_TYPES.REGULAR, CAR_TYPES.VIP)
     .messages({
       'any.only': `Type must be either ${CAR_TYPES.REGULAR} or ${CAR_TYPES.VIP}`
-    })
+    }),
+
+  pickupStation: Joi.string().optional(),
+  dropoffStation: Joi.string().optional()
 })
 
 export { ticketSchema, ticketUpdateSchema }

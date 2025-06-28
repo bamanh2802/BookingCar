@@ -18,7 +18,7 @@ class TicketRequestRepository extends BaseRepository {
    * Tìm vé theo ID
    */
   async findTicketById(ticketId) {
-    return this.findOne({ _id: ticketId })
+    return this.findOne({ _id: new Types.ObjectId(ticketId) })
   }
 
   /**
@@ -33,6 +33,8 @@ class TicketRequestRepository extends BaseRepository {
    * Lấy thông tin vé
    */
   async getTicketDetail(id) {
+    // Kiểm tra ObjectId hợp lệ
+    if (!Types.ObjectId.isValid(id)) return null
     const pipeline = [
       { $match: { _id: new Types.ObjectId(id) } },
       {
@@ -81,7 +83,7 @@ class TicketRequestRepository extends BaseRepository {
           as: 'userInfor'
         }
       },
-      { $unwind: '$userInfor' },
+      { $unwind: { path: '$userInfor', preserveNullAndEmptyArrays: true } },
 
       // Lookup tripInfo
       {
@@ -96,7 +98,7 @@ class TicketRequestRepository extends BaseRepository {
           as: 'tripInfo'
         }
       },
-      { $unwind: '$tripInfo' },
+      { $unwind: { path: '$tripInfo', preserveNullAndEmptyArrays: true } },
 
       // Lookup carCompanyInfo trực tiếp sau khi đã có tripInfo
       {
@@ -114,7 +116,10 @@ class TicketRequestRepository extends BaseRepository {
           as: 'carCompanyInfo'
         }
       },
-      { $unwind: '$carCompanyInfo' }
+      { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } }
+
+      // Project cuối để loại bỏ các trường không cần thiết (nếu muốn)
+      // { $project: { ... } }
     ]
 
     const result = await this.model.aggregate(pipeline)
