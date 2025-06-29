@@ -1,7 +1,7 @@
 import { ticketModel } from '~/models/ticketModel'
 import BaseRepository from './baseRepository'
 import { Types } from 'mongoose'
-import { TICKET_STATUS } from '~/constants'
+import { TICKET_STATUS, USER_ROLES } from '~/constants'
 import { getReportTimeInfo } from '~/utils/timeTranfer'
 import { fillMissingChartData } from '~/utils/algorithms'
 
@@ -328,12 +328,12 @@ class TicketRequestRepository extends BaseRepository {
   //Lấy doanh thu cho admin
   async getRevenueStatsByRole(filter, period) {
     const timeInfo = getReportTimeInfo(period || '7days')
-    const { utcDateRange, groupingInfo } = timeInfo
-    const { groupByFormat, timezone, labels: allLabels } = groupingInfo
     if (!timeInfo) {
-      // Thêm kiểm tra phòng trường hợp timeInfo là null
       throw new Error('Invalid period provided for report.')
     }
+
+    const { utcDateRange, groupingInfo } = timeInfo
+    const { groupByFormat, timezone, labels: allLabels } = groupingInfo
 
     const pipeline = [
       {
@@ -347,12 +347,24 @@ class TicketRequestRepository extends BaseRepository {
         }
       },
       {
+        // Tính số ghế (seats.length) cho mỗi ticket
+        $project: {
+          createdAt: 1,
+          price: 1,
+          seatCount: { $size: '$seats' }
+        }
+      },
+      {
         $group: {
           _id: {
-            $dateToString: { format: groupByFormat, date: '$createdAt', timezone }
+            $dateToString: {
+              format: groupByFormat,
+              date: '$createdAt',
+              timezone
+            }
           },
           totalRevenue: { $sum: '$price' },
-          totalTickets: { $sum: 1 }
+          totalTickets: { $sum: '$seatCount' }
         }
       },
       {
@@ -362,8 +374,10 @@ class TicketRequestRepository extends BaseRepository {
 
     const chartDataRaw = await this.model.aggregate(pipeline)
 
+    // Bổ sung dữ liệu trống nếu có tuần/ngày/tháng nào không có data
     const chartData = fillMissingChartData(chartDataRaw, allLabels)
 
+    // Tính tổng toàn kỳ
     const totals = chartData.reduce(
       (acc, item) => {
         acc.totalRevenue += item.totalRevenue
@@ -374,6 +388,129 @@ class TicketRequestRepository extends BaseRepository {
     )
 
     return { ...totals, chartData }
+  }
+
+  async getRevenueTicketType({ startDate, endDate }) {
+    const pipeline = [
+      {
+        $match: {
+          status: TICKET_STATUS.DONE,
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $project: {
+          type: 1,
+          price: 1,
+          seatCount: { $size: '$seats' }
+        }
+      },
+      {
+        $group: {
+          _id: '$type',
+          totalRevenue: { $sum: '$price' },
+          ticketSold: { $sum: '$seatCount' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          ticketType: '$_id',
+          totalRevenue: 1,
+          ticketSold: 1
+        }
+      },
+      {
+        $sort: { totalRevenue: -1 }
+      }
+    ]
+
+    const result = await this.model.aggregate(pipeline)
+    return result || []
+  }
+
+  async getTopAgentLv1Report({ startDate, endDate, limit }) {
+    const pipeline = [
+      {
+        $match: {
+          status: TICKET_STATUS.DONE,
+          createdBy: { $exists: true, $ne: null },
+          createdAt: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'createdBy',
+          foreignField: '_id',
+          as: 'creatorInfo'
+        }
+      },
+      {
+        $unwind: '$creatorInfo' // ✅ Đúng tên
+      },
+      {
+        $project: {
+          price: 1,
+          seatCount: { $size: '$seats' },
+          creatorInfo: 1 // giữ lại để dùng trong $addFields
+        }
+      },
+      {
+        $addFields: {
+          revenueOwnerId: {
+            $cond: {
+              if: { $eq: ['$creatorInfo.roleName', USER_ROLES.AGENT_LV1] },
+              then: '$creatorInfo._id',
+              else: '$creatorInfo.parentId'
+            }
+          }
+        }
+      },
+      {
+        $match: { revenueOwnerId: { $ne: null } }
+      },
+      {
+        $group: {
+          _id: '$revenueOwnerId',
+          totalRevenue: { $sum: '$price' },
+          ticketSold: { $sum: '$seatCount' }
+        }
+      },
+      {
+        $sort: { totalRevenue: -1 }
+      },
+      {
+        $limit: limit
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'agentLv1Details'
+        }
+      },
+      {
+        $unwind: '$agentLv1Details'
+      },
+      {
+        $project: {
+          _id: 0,
+          agentId: '$_id',
+          agentName: '$agentLv1Details.fullName',
+          agentEmail: '$agentLv1Details.email',
+          totalRevenue: 1,
+          ticketSold: 1
+        }
+      }
+    ]
+
+    const result = await this.model.aggregate(pipeline)
+    return result || []
   }
 }
 
