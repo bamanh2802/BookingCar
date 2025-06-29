@@ -55,6 +55,14 @@ const createTicketRequest = async (ticketRequest, currentUser) => {
     return await ticketRequestRepository.createTicketRequest(newTicketRequestData)
   }
 
+  //Kiểm tra xem người dùng có tồn tại hay không
+  const user = await userRepository.findById(ticketRequest.userId)
+  if (!user) throw new ConflictError('Người dùng này không tồn tại')
+
+  if (currentUser.roleName !== USER_ROLES.CLIENT && String(currentUser._id) !== String(user._id)) {
+    ticketRequest.createdBy = currentUser._id
+  }
+
   if (ticketRequest.titleRequest !== TITLE_TICKET_REQUESTS.REFUND) {
     //Kiểm tra xem chuyến đi có tồn tại không
     const trip = await tripRespository.findTripById(ticketRequest.tripId)
@@ -77,13 +85,6 @@ const createTicketRequest = async (ticketRequest, currentUser) => {
     return newTicketRequest
   }
 
-  //Kiểm tra xem người dùng có tồn tại hay không
-  const user = await userRepository.findById(ticketRequest.userId)
-  if (!user) throw new ConflictError('Người dùng này không tồn tại')
-
-  if (currentUser.roleName !== USER_ROLES.CLIENT && String(currentUser._id) !== String(user._id)) {
-    ticketRequest.createdBy = currentUser._id
-  }
   // Tạo yêu cầu vé mới
   const newTicketRequest = await ticketRequestRepository.createTicketRequest(ticketRequest)
   return newTicketRequest
@@ -230,6 +231,7 @@ const updateTicketRequest = async (ticketRequestId, updateData) => {
           status: TICKET_STATUS.CONFIRMED,
           seats: requestedSeats,
           type: ticketRequest.type,
+          createdBy: ticketRequest.createdBy || null,
           passengerName: ticketRequest.passengerName,
           passengerPhone: ticketRequest.passengerPhone,
           pickupStation: ticketRequest.pickupStation,

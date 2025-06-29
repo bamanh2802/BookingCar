@@ -54,7 +54,7 @@ const payCommissionForTicket = async (ticket, session) => {
 
   //Cập nhật số dư của người dùng
   const increaseBalance = user.amount + commissionAmount
-  const updatedUser = await userRepository.updateById(user._id, { amount: increaseBalance }, { session })
+  const updatedUser = await userRepository.updateById(user._id, { amount: increaseBalance }, { new: true, session })
 
   if (!updatedUser) {
     throw new ConflictError('Cập nhật số dư người dùng không thành công')
@@ -87,10 +87,10 @@ const payCommissionForTicket = async (ticket, session) => {
       const agencyCommission = await commissionRepository.findByRoleId(agencyUser.roleId)
       if (agencyCommission) {
         const agencyCommissionAmount = (ticket.price * agencyCommission.percent) / 100
-        const agencyNewBalance = (agencyUser.balance || 0) + agencyCommissionAmount
+        const agencyNewBalance = (agencyUser.amount || 0) + agencyCommissionAmount
         const updatedAgencyUser = await userRepository.updateById(
           agencyUser._id,
-          { balance: agencyNewBalance },
+          { amount: agencyNewBalance },
           { session }
         )
         if (!updatedAgencyUser) {
@@ -114,7 +114,7 @@ const payCommissionForTicket = async (ticket, session) => {
         agencyCommissionResult = {
           id: updatedAgencyUser._id,
           name: updatedAgencyUser.name,
-          balance: updatedAgencyUser.balance,
+          amount: updatedAgencyUser.amount,
           commissionPaidHistory: savedAgencyCommissionHistory
         }
       }
