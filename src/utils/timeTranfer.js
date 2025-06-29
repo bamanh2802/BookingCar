@@ -3,6 +3,7 @@ import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import isoWeek from 'dayjs/plugin/isoWeek'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
+import logger from './logger'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -118,4 +119,21 @@ export const getReportTimeInfo = (period) => {
       timezone: TIMEZONE
     }
   }
+}
+
+export const getUtcDateRangeForMonth = (monthYear) => {
+  // Giả định dayjs và TIMEZONE đã được import/định nghĩa
+  const targetMonth = dayjs(monthYear, 'YYYY-MM').tz(TIMEZONE)
+
+  // Kiểm tra nếu đầu vào hợp lệ
+  if (!targetMonth.isValid()) {
+    logger.warn(`Định dạng tháng năm không hợp lệ: "${monthYear}". Vui lòng sử dụng "YYYY-MM".`)
+    return null
+  }
+
+  // Lấy thời điểm bắt đầu và kết thúc của tháng, sau đó chuyển sang UTC
+  const startDate = targetMonth.startOf('month').utc().toDate()
+  const endDate = targetMonth.endOf('month').utc().toDate()
+
+  return { startDate, endDate }
 }

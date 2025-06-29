@@ -154,8 +154,8 @@ const getCommissionStats = catchAsync(async (req, res) => {
  * Tính toán hoa hồng cho tất cả đại lý (Admin)
  */
 const calculateAllCommissions = catchAsync(async (req, res) => {
-  const { period } = req.query
-  const result = await commissionService.calculateCommissionsForPeriod(period)
+  const { month } = req.query
+  const result = await commissionService.calculateCommissionsForPeriod(month)
   return res.status(200).json(ApiResponse.success(result, 'Tính toán hoa hồng thành công'))
 })
 

@@ -10,7 +10,7 @@ const getAdminRevenue = async (period) => {
 }
 
 const getRevenueAgentsLv1 = async (agentLv1Id, period) => {
-  const subordinateAgents = await userRepository.findAll({ parentId: agentLv1Id }).select('_id')
+  const subordinateAgents = await userRepository.findAll({ parentId: agentLv1Id }, '_id')
   const subordinateAgentIds = subordinateAgents.map((agent) => agent._id)
 
   const allCreatorIds = [new Types.ObjectId(agentLv1Id), ...subordinateAgentIds]
