@@ -1,5 +1,6 @@
 import { commissionModel } from '~/models/commissionModel'
 import BaseRepository from './baseRepository'
+
 class CommissionRepository extends BaseRepository {
   constructor() {
     super(commissionModel)
@@ -126,18 +127,6 @@ class CommissionRepository extends BaseRepository {
       totalAmount: 0,
       pendingAmount: 0,
       paidAmount: 0
-    }
-  }
-
-  /**
-   * Tính toán hoa hồng cho khoảng thời gian
-   */
-  async calculateForPeriod(startDate, endDate) {
-    // Mock calculation for now
-    return {
-      period: { startDate, endDate },
-      totalCalculated: 0,
-      commissions: []
     }
   }
 }

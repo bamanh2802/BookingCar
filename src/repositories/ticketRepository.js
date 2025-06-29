@@ -330,6 +330,10 @@ class TicketRequestRepository extends BaseRepository {
     const timeInfo = getReportTimeInfo(period || '7days')
     const { utcDateRange, groupingInfo } = timeInfo
     const { groupByFormat, timezone, labels: allLabels } = groupingInfo
+    if (!timeInfo) {
+      // Thêm kiểm tra phòng trường hợp timeInfo là null
+      throw new Error('Invalid period provided for report.')
+    }
 
     const pipeline = [
       {
@@ -357,6 +361,7 @@ class TicketRequestRepository extends BaseRepository {
     ]
 
     const chartDataRaw = await this.model.aggregate(pipeline)
+
     const chartData = fillMissingChartData(chartDataRaw, allLabels)
 
     const totals = chartData.reduce(
