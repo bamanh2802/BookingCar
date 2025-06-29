@@ -25,4 +25,4 @@ Router.route('/profile')
   .get(adminAuth, adminAuthController.getProfile)
   .patch(adminAuth, userValidation.updateProfile, adminAuthController.updateProfile)
 
-export const adminAuthRoutes = Router 
+export const adminAuthRoutes = Router

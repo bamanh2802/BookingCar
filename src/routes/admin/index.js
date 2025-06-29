@@ -13,6 +13,7 @@ import { adminCommissionRoutes } from './commissions.js'
 import { adminBankAccountRoutes } from './bank-accounts.js'
 import { adminUserRoleRoutes } from './user-roles.js'
 import ApiResponse from '~/utils/ApiResponse'
+import { adminRevenueRoutes } from './revenue.js'
 
 const Router = express.Router()
 
@@ -34,5 +35,6 @@ Router.use('/ticket-requests', adminTicketRequestRoutes)
 Router.use('/commissions', adminCommissionRoutes)
 Router.use('/bank-accounts', adminBankAccountRoutes)
 Router.use('/user-roles', adminUserRoleRoutes)
+Router.use('/revenue', adminRevenueRoutes)
 
-export const adminRoutes = Router 
+export const adminRoutes = Router

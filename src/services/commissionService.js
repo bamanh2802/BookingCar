@@ -38,6 +38,7 @@ const getAllCommissionsWithRoles = async () => {
 const payCommissionForTicket = async (ticket, session) => {
   //Lấy thông tin user
   const user = await userRepository.findById(ticket.userId)
+  // console.log('ticket', ticket)
   if (!user) {
     throw new NotFoundError('Không tìm thấy người dùng')
   }

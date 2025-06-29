@@ -132,13 +132,14 @@ const updateTrip = async (tripId, tripData) => {
       await ticketRepository.updateMany(
         { tripId, status: { $eq: TICKET_STATUS.CONFIRMED } },
         { status: TICKET_STATUS.DONE },
-        { session }
+        { session, new: true }
       )
       // Lấy các vé vừa cập nhật để trả hoa hồng
       const tickets = await ticketRepository.findTicketsByTripId(tripId, {
         status: TICKET_STATUS.DONE,
         commissionPaid: { $ne: true }
       })
+      console.log(tickets)
       // Trả hoa hồng cho từng vé trong transaction
       for (const ticket of tickets) {
         await commissionService.payCommissionForTicket(ticket, session)

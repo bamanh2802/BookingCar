@@ -1,9 +1,11 @@
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
+import isoWeek from 'dayjs/plugin/isoWeek'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
+dayjs.extend(isoWeek)
 
 const TIMEZONE = 'Asia/Ho_Chi_Minh'
 
@@ -30,4 +32,85 @@ export const dayRangeUTC = (day) => {
   const endOfDay = dayjs.utc(day).endOf('day').add(1, 'millisecond').toDate()
 
   return { startOfDay, endOfDay }
+}
+/**
+ * Lấy tất cả thông tin cần thiết cho việc tạo báo cáo dựa trên một period cụ thể.
+ * @param {string} period - ('7days', '1month', '12months').
+ * @returns {{
+ *   utcDateRange: {startDate: Date, endDate: Date},
+ *   groupingInfo: {groupByFormat: string, labels: string[], timezone: string}
+ * } | null}
+ */
+export const getReportTimeInfo = (period) => {
+  if (!['7days', '1month', '12months'].includes(period)) {
+    // Nếu period không hợp lệ hoặc không được cung cấp, trả về null hoặc một giá trị mặc định.
+    // Ở đây ta trả về null để báo lỗi rõ ràng.
+    return null
+  }
+
+  const nowInLocal = dayjs().tz(TIMEZONE)
+  let startDateInLocal, endDateInLocal
+  let labels = []
+  let groupByFormat
+
+  let current
+
+  switch (period) {
+    // ------------------- 7 NGÀY GẦN NHẤT, GOM THEO NGÀY -------------------
+    case '7days':
+      endDateInLocal = nowInLocal
+      startDateInLocal = nowInLocal.subtract(6, 'day')
+      groupByFormat = '%Y-%m-%d'
+
+      current = startDateInLocal
+      while (current.isBefore(endDateInLocal) || current.isSame(endDateInLocal, 'day')) {
+        labels.push(current.format('YYYY-MM-DD'))
+        current = current.add(1, 'day')
+      }
+      break
+
+    // ------------------- 4 TUẦN GẦN NHẤT, GOM THEO TUẦN -------------------
+    case '1month': // Logic này giờ đây có nghĩa là "4 tuần"
+      // Lấy ngày bắt đầu của tuần hiện tại làm mốc kết thúc
+      endDateInLocal = nowInLocal.endOf('isoWeek')
+      // Lùi lại 3 tuần (tổng cộng 4 tuần) và lấy ngày bắt đầu của tuần đó
+      startDateInLocal = nowInLocal.subtract(3, 'week').startOf('isoWeek')
+      groupByFormat = '%G-%V' // Năm và Tuần ISO
+
+      current = startDateInLocal
+      while (current.isBefore(endDateInLocal)) {
+        labels.push(current.format('GGGG-WW'))
+        current = current.add(1, 'week')
+      }
+      break
+
+    // ------------------- 12 THÁNG GẦN NHẤT, GOM THEO THÁNG -------------------
+    case '12months': {
+      endDateInLocal = nowInLocal
+      // Lùi lại 11 tháng (tổng cộng 12 tháng)
+      startDateInLocal = nowInLocal.subtract(11, 'month')
+      groupByFormat = '%Y-%m'
+
+      current = startDateInLocal.startOf('month')
+      const endOfMonth = endDateInLocal.endOf('month')
+      while (current.isBefore(endOfMonth) || current.isSame(endOfMonth, 'month')) {
+        labels.push(current.format('YYYY-MM'))
+        current = current.add(1, 'month')
+      }
+      break
+    }
+  }
+
+  // Trả về một object chứa tất cả thông tin cần thiết
+  return {
+    utcDateRange: {
+      startDate: startDateInLocal.startOf('day').utc().toDate(),
+      endDate: endDateInLocal.endOf('day').utc().toDate()
+    },
+    groupingInfo: {
+      groupByFormat,
+      labels,
+      timezone: TIMEZONE
+    }
+  }
 }
