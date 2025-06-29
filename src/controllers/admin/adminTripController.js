@@ -9,12 +9,9 @@ const getTrips = catchAsync(async (req, res) => {
   const { page = 1, limit = 10, search, companyId, vehicleId, status, startDate, endDate } = req.query
 
   const filter = {}
-  
+
   if (search) {
-    filter.$or = [
-      { departure: { $regex: search, $options: 'i' } },
-      { destination: { $regex: search, $options: 'i' } }
-    ]
+    filter.$or = [{ departure: { $regex: search, $options: 'i' } }, { destination: { $regex: search, $options: 'i' } }]
   }
 
   if (companyId) {
@@ -85,7 +82,7 @@ const deleteTrip = catchAsync(async (req, res) => {
 const cancelTrip = catchAsync(async (req, res) => {
   const { tripId } = req.params
   const { reason } = req.body
-  const cancelledTrip = await tripService.updateTrip(tripId, { 
+  const cancelledTrip = await tripService.updateTrip(tripId, {
     status: 'Cancelled',
     cancelReason: reason,
     cancelledAt: new Date()
@@ -98,7 +95,7 @@ const cancelTrip = catchAsync(async (req, res) => {
  */
 const completeTrip = catchAsync(async (req, res) => {
   const { tripId } = req.params
-  const completedTrip = await tripService.updateTrip(tripId, { 
+  const completedTrip = await tripService.updateTrip(tripId, {
     status: 'Completed',
     completedAt: new Date()
   })
@@ -111,7 +108,7 @@ const completeTrip = catchAsync(async (req, res) => {
 const getTripsByCompany = catchAsync(async (req, res) => {
   const { companyId } = req.params
   const { page = 1, limit = 10 } = req.query
-  
+
   const trips = await tripService.getTrips({ companyId }, parseInt(page), parseInt(limit))
   return res.status(200).json(ApiResponse.success(trips, 'Lấy danh sách chuyến đi theo công ty thành công'))
 })
@@ -122,7 +119,7 @@ const getTripsByCompany = catchAsync(async (req, res) => {
 const getTripsByVehicle = catchAsync(async (req, res) => {
   const { vehicleId } = req.params
   const { page = 1, limit = 10 } = req.query
-  
+
   const trips = await tripService.getTrips({ vehicleId }, parseInt(page), parseInt(limit))
   return res.status(200).json(ApiResponse.success(trips, 'Lấy danh sách chuyến đi theo phương tiện thành công'))
 })
@@ -137,4 +134,4 @@ export const adminTripController = {
   completeTrip,
   getTripsByCompany,
   getTripsByVehicle
-} 
+}

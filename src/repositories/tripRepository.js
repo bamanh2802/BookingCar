@@ -113,6 +113,7 @@ class TripRespository extends BaseRepository {
    */
   async findAllTripWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
     const skip = (page - 1) * limit
+    console.log(page)
 
     const pipeline = [
       { $match: filter },

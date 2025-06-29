@@ -26,7 +26,7 @@ const getTicketRequests = catchAsync(async (req, res) => {
     if (restQuery[field]) filter[field] = restQuery[field]
   })
 
-  const ticketRequests = await ticketRequestService.getTicketRequests(filter, page, limit)
+  const ticketRequests = await ticketRequestService.getTicketRequests(filter, parseInt(page), parseInt(limit))
   return res.status(StatusCodes.OK).json(ApiResponse.success(ticketRequests, 'Lấy danh sách yêu cầu vé thành công'))
 })
 

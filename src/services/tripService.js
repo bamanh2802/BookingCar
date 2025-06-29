@@ -15,6 +15,7 @@ import { commissionService } from './commissionService'
 const getTrips = async (reqQuery = {}, page = 1, limit = 10) => {
   const { day, ...otherFilters } = reqQuery
   let filter = { ...otherFilters }
+  console.log(reqQuery)
 
   if (day) {
     const { startOfDay, endOfDay } = dayRangeUTC(day)
