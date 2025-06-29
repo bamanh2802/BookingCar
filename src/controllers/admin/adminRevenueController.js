@@ -41,4 +41,14 @@ const getRevenueTicketType = catchAsync(async (req, res) => {
   return res.status(StatusCodes.OK).json(ApiResponse.success(results, 'Lấy doanh thu theo loại vé thành công'))
 })
 
-export const adminRevenueController = { getAllRevenues, getRevenueTicketType }
+const getTopAgentLv1ByRevenue = catchAsync(async (req, res) => {
+  const { monthYear } = req.query || '7days'
+  const { limit = 5 } = req.query
+
+  const results = await adminRevenueService.getTopAgentLv1ByRevenue(monthYear, limit)
+  return res
+    .status(StatusCodes.OK)
+    .json(ApiResponse.success(results, `Lấy danh sách  ${limit} đại lí cấp 1 có donah thu cao nhất thành công`))
+})
+
+export const adminRevenueController = { getAllRevenues, getRevenueTicketType, getTopAgentLv1ByRevenue }

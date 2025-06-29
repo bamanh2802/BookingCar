@@ -15,5 +15,5 @@ Router.route('/').get(
 
 Router.route('/ticket').get(adminAuth, adminRevenueController.getRevenueTicketType)
 
-// Router.get('/agents', adminAuth, adminRevenueController.getAgentRevenues)
+Router.get('/top-agent-lv1-by-revenue', adminAuth, adminRevenueController.getTopAgentLv1ByRevenue)
 export const adminRevenueRoutes = Router

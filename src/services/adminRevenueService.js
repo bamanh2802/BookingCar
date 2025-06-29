@@ -34,9 +34,18 @@ const getRevenueTicketType = async (monthYear) => {
 
   return await ticketRepository.getRevenueTicketType(dateRange)
 }
+
+const getTopAgentLv1ByRevenue = async (monthYear, limit) => {
+  const dateRange = getUtcDateRangeForMonth(monthYear)
+  if (!dateRange) throw new ConflictError('Tháng không hợp lệ')
+
+  const { startDate, endDate } = dateRange
+  return await ticketRepository.getTopAgentLv1Report({ startDate, endDate, limit })
+}
 export const adminRevenueService = {
   getAdminRevenue,
   getRevenueAgentsLv1,
   getRevenueAgentsLv2,
-  getRevenueTicketType
+  getRevenueTicketType,
+  getTopAgentLv1ByRevenue
 }
