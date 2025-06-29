@@ -2,6 +2,8 @@ import { ticketModel } from '~/models/ticketModel'
 import BaseRepository from './baseRepository'
 import { Types } from 'mongoose'
 import { TICKET_STATUS } from '~/constants'
+import { getReportTimeInfo } from '~/utils/timeTranfer'
+import { fillMissingChartData } from '~/utils/algorithms'
 
 class TicketRequestRepository extends BaseRepository {
   constructor() {
@@ -25,8 +27,8 @@ class TicketRequestRepository extends BaseRepository {
    * Tìm toàn bộ vé theo ID chuyến đi
    * @param {String} tripId - ID của chuyến đi
    */
-  async findTicketsByTripId(tripId) {
-    return this.findAll({ tripId })
+  async findTicketsByTripId(tripId, filter) {
+    return this.findAll({ tripId, filter })
   }
 
   /**
@@ -322,6 +324,51 @@ class TicketRequestRepository extends BaseRepository {
         totalPages: Math.ceil(total / limit)
       }
     }
+  }
+  //Lấy doanh thu cho admin
+  async getRevenueStatsByRole(filter, period) {
+    const timeInfo = getReportTimeInfo(period || '7days')
+    const { utcDateRange, groupingInfo } = timeInfo
+    const { groupByFormat, timezone, labels: allLabels } = groupingInfo
+
+    const pipeline = [
+      {
+        $match: {
+          ...filter,
+          status: TICKET_STATUS.DONE,
+          createdAt: {
+            $gte: utcDateRange.startDate,
+            $lte: utcDateRange.endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: groupByFormat, date: '$createdAt', timezone }
+          },
+          totalRevenue: { $sum: '$price' },
+          totalTickets: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: 1 }
+      }
+    ]
+
+    const chartDataRaw = await this.model.aggregate(pipeline)
+    const chartData = fillMissingChartData(chartDataRaw, allLabels)
+
+    const totals = chartData.reduce(
+      (acc, item) => {
+        acc.totalRevenue += item.totalRevenue
+        acc.totalTickets += item.totalTickets
+        return acc
+      },
+      { totalRevenue: 0, totalTickets: 0 }
+    )
+
+    return { ...totals, chartData }
   }
 }
 
