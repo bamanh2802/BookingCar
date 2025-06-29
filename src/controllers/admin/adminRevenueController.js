@@ -9,7 +9,8 @@ import { AuthenticationError, ConflictError } from '~/utils/errors'
 const VALID_PERIODS = ['7days', '1month', '12months']
 
 const getAllRevenues = catchAsync(async (req, res) => {
-  const { _id: userId, roleName } = req.user
+  const userId = req.user._id || req.query?.userId
+  const roleName = req.user.roleName || req.query?.roleName
   const period = req.query.period || '7days'
   if (!VALID_PERIODS.includes(period)) {
     throw new ConflictError('Mốc thời gian không hợp lệ')

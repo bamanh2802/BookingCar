@@ -125,16 +125,14 @@ class CommissionPaidHistoryRepository extends BaseRepository {
   /**
    * Tính toán hoa hồng cho khoảng thời gian
    */
-  async calculateForPeriod(period) {
-    const timeInfo = getReportTimeInfo(period || '1month')
-    const { utcDateRange } = timeInfo
+  async calculateForPeriod({ startDate, endDate }) {
     const pipeline = [
       {
         $match: {
           status: REFUND_STATUS.COMPLETED,
           createdAt: {
-            $gte: utcDateRange.startDate,
-            $lte: utcDateRange.endDate
+            $gte: startDate,
+            $lte: endDate
           }
         }
       },

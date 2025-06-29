@@ -5,6 +5,7 @@ import userRepository from '~/repositories/userRepository'
 import userRoleRepository from '~/repositories/userRoleRepository'
 import ticketRepository from '~/repositories/ticketRepository'
 import { ConflictError, NotFoundError } from '~/utils/errors'
+import { getReportTimeInfo, getUtcDateRangeForMonth } from '~/utils/timeTranfer'
 
 const updateCommission = async (roldeId, updateData) => {
   const role = await userRoleRepository.findById(roldeId)
@@ -165,9 +166,17 @@ const getCommissionStats = async (filter = {}) => {
   return await commissionRepository.getStats(filter)
 }
 
-const calculateCommissionsForPeriod = async (period) => {
+const calculateCommissionsForPeriod = async (monthYear) => {
+  // Ưu tiên kiểm tra monthYear trước
+
+  const dateRange = getUtcDateRangeForMonth(monthYear)
+  if (!dateRange) {
+    // Xử lý trường hợp định dạng sai, có thể trả về lỗi hoặc giá trị mặc định
+    return { totalCalculated: 0, totalCommissions: 0 }
+  }
+
   // Logic tính toán hoa hồng cho khoảng thời gian
-  return await commissionPaidHistoryRepository.calculateForPeriod(period)
+  return await commissionPaidHistoryRepository.calculateForPeriod(dateRange)
 }
 
 export const commissionService = {
