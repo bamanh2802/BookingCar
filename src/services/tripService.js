@@ -123,29 +123,37 @@ const updateTrip = async (tripId, tripData) => {
     if (!trip) {
       throw new ConflictError('Chuyến đi không tồn tại')
     }
-    // Kiểm tra xem chuyến đi có đang ở trạng thái đã hoàn thành hay không
     if (trip.status && trip.status === TRIP_TITLES.COMPLETED) {
       throw new ConflictError('Không thể cập nhật chuyến đi đã hoàn thành')
     }
 
     if (tripData?.status && tripData.status === TRIP_TITLES.COMPLETED) {
-      // Bulk update status tất cả vé thành DONE
-      await ticketRepository.updateMany(
-        { tripId, status: { $eq: TICKET_STATUS.CONFIRMED } },
-        { status: TICKET_STATUS.DONE },
-        { session, new: true }
-      )
-      // Lấy các vé vừa cập nhật để trả hoa hồng
-      const tickets = await ticketRepository.findTicketsByTripId(tripId, {
-        status: TICKET_STATUS.DONE,
+      // BƯỚC 1: Tìm tất cả các vé cần xử lý TRƯỚC KHI cập nhật
+      // Tìm các vé đã xác nhận và chưa được trả hoa hồng
+      const ticketsToProcess = await ticketRepository.findTicketsByTripId(tripId, {
+        status: TICKET_STATUS.CONFIRMED,
         commissionPaid: { $ne: true }
       })
-      console.log(tickets)
-      // Trả hoa hồng cho từng vé trong transaction
-      for (const ticket of tickets) {
-        await commissionService.payCommissionForTicket(ticket, session)
+
+      // Nếu có vé cần xử lý, mới thực hiện các bước tiếp theo
+      if (ticketsToProcess.length > 0) {
+        const ticketIdsToUpdate = ticketsToProcess.map((t) => t._id)
+
+        // BƯỚC 2: Bulk update status tất cả vé thành DONE
+        await ticketRepository.updateMany(
+          { _id: { $in: ticketIdsToUpdate } }, // Cập nhật dựa trên ID đã tìm thấy
+          { status: TICKET_STATUS.DONE },
+          { session }
+        )
+
+        // BƯỚC 3: Trả hoa hồng cho từng vé đã tìm thấy ở BƯỚC 1
+        for (const ticket of ticketsToProcess) {
+          // ticket ở đây đã có đủ thông tin, không cần query lại
+          await commissionService.payCommissionForTicket(ticket, session)
+        }
       }
     }
+
     const updatedTrip = await tripRespository.updateById(tripId, { ...tripData }, { new: true, session })
     await session.commitTransaction()
     return updatedTrip

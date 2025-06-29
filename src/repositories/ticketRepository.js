@@ -28,7 +28,7 @@ class TicketRequestRepository extends BaseRepository {
    * @param {String} tripId - ID của chuyến đi
    */
   async findTicketsByTripId(tripId, filter) {
-    return this.findAll({ tripId, filter })
+    return this.findAll({ tripId, ...filter })
   }
 
   /**
