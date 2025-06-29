@@ -2,10 +2,12 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import isoWeek from 'dayjs/plugin/isoWeek'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
 dayjs.extend(isoWeek)
+dayjs.extend(advancedFormat)
 
 const TIMEZONE = 'Asia/Ho_Chi_Minh'
 
@@ -70,16 +72,19 @@ export const getReportTimeInfo = (period) => {
       break
 
     // ------------------- 4 TUẦN GẦN NHẤT, GOM THEO TUẦN -------------------
-    case '1month': // Logic này giờ đây có nghĩa là "4 tuần"
-      // Lấy ngày bắt đầu của tuần hiện tại làm mốc kết thúc
+    case '1month': // Logic này có nghĩa là "4 tuần gần nhất"
+      // Lấy ngày cuối của tuần hiện tại làm mốc kết thúc
       endDateInLocal = nowInLocal.endOf('isoWeek')
-      // Lùi lại 3 tuần (tổng cộng 4 tuần) và lấy ngày bắt đầu của tuần đó
+      // Lùi lại 3 tuần và lấy ngày đầu của tuần đó làm mốc bắt đầu (tổng cộng 4 tuần)
       startDateInLocal = nowInLocal.subtract(3, 'week').startOf('isoWeek')
-      groupByFormat = '%G-%V' // Năm và Tuần ISO
+      groupByFormat = '%G-%V' // Định dạng cho MongoDB (Năm và Tuần ISO)
 
       current = startDateInLocal
-      while (current.isBefore(endDateInLocal)) {
+      for (let i = 0; i < 4; i++) {
+        // SỬA LỖI TẠI ĐÂY:
+        // Phải gọi `current.format()` để tạo ra nhãn đúng, ví dụ: "2025-24"
         labels.push(current.format('GGGG-WW'))
+
         current = current.add(1, 'week')
       }
       break

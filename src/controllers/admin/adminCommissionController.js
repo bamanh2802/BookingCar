@@ -9,11 +9,9 @@ const getCommissions = catchAsync(async (req, res) => {
   const { page = 1, limit = 10, search, userId, status, startDate, endDate } = req.query
 
   const filter = {}
-  
+
   if (search) {
-    filter.$or = [
-      { description: { $regex: search, $options: 'i' } }
-    ]
+    filter.$or = [{ description: { $regex: search, $options: 'i' } }]
   }
 
   if (userId) {
@@ -80,7 +78,7 @@ const deleteCommission = catchAsync(async (req, res) => {
 const approveCommission = catchAsync(async (req, res) => {
   const { commissionId } = req.params
   const { approvalNote } = req.body
-  const approvedCommission = await commissionService.updateCommission(commissionId, { 
+  const approvedCommission = await commissionService.updateCommission(commissionId, {
     status: 'Approved',
     approvedBy: req.user._id,
     approvedAt: new Date(),
@@ -95,7 +93,7 @@ const approveCommission = catchAsync(async (req, res) => {
 const rejectCommission = catchAsync(async (req, res) => {
   const { commissionId } = req.params
   const { rejectionReason } = req.body
-  const rejectedCommission = await commissionService.updateCommission(commissionId, { 
+  const rejectedCommission = await commissionService.updateCommission(commissionId, {
     status: 'Rejected',
     rejectedBy: req.user._id,
     rejectedAt: new Date(),
@@ -110,7 +108,7 @@ const rejectCommission = catchAsync(async (req, res) => {
 const payCommission = catchAsync(async (req, res) => {
   const { commissionId } = req.params
   const { paymentNote, paymentMethod } = req.body
-  const paidCommission = await commissionService.updateCommission(commissionId, { 
+  const paidCommission = await commissionService.updateCommission(commissionId, {
     status: 'Paid',
     paidBy: req.user._id,
     paidAt: new Date(),
@@ -126,7 +124,7 @@ const payCommission = catchAsync(async (req, res) => {
 const getCommissionsByUser = catchAsync(async (req, res) => {
   const { userId } = req.params
   const { page = 1, limit = 10 } = req.query
-  
+
   const commissions = await commissionService.getCommissions({ userId }, parseInt(page), parseInt(limit))
   return res.status(200).json(ApiResponse.success(commissions, 'Lấy danh sách hoa hồng theo người dùng thành công'))
 })
@@ -136,7 +134,7 @@ const getCommissionsByUser = catchAsync(async (req, res) => {
  */
 const getCommissionStats = catchAsync(async (req, res) => {
   const { startDate, endDate, userId } = req.query
-  
+
   const filter = {}
   if (startDate && endDate) {
     filter.createdAt = {
@@ -156,8 +154,8 @@ const getCommissionStats = catchAsync(async (req, res) => {
  * Tính toán hoa hồng cho tất cả đại lý (Admin)
  */
 const calculateAllCommissions = catchAsync(async (req, res) => {
-  const { startDate, endDate } = req.body
-  const result = await commissionService.calculateCommissionsForPeriod(startDate, endDate)
+  const { period } = req.query
+  const result = await commissionService.calculateCommissionsForPeriod(period)
   return res.status(200).json(ApiResponse.success(result, 'Tính toán hoa hồng thành công'))
 })
 
@@ -173,4 +171,4 @@ export const adminCommissionController = {
   getCommissionsByUser,
   getCommissionStats,
   calculateAllCommissions
-} 
+}

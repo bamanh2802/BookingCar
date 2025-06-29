@@ -165,9 +165,9 @@ const getCommissionStats = async (filter = {}) => {
   return await commissionRepository.getStats(filter)
 }
 
-const calculateCommissionsForPeriod = async (startDate, endDate) => {
+const calculateCommissionsForPeriod = async (period) => {
   // Logic tính toán hoa hồng cho khoảng thời gian
-  return await commissionRepository.calculateForPeriod(startDate, endDate)
+  return await commissionPaidHistoryRepository.calculateForPeriod(period)
 }
 
 export const commissionService = {

@@ -1,5 +1,7 @@
 import { commissionPaidHistoryModel } from '~/models/commissionPaidHistory'
 import BaseRepository from './baseRepository.js'
+import { REFUND_STATUS } from '~/constants/index.js'
+import { getReportTimeInfo } from '~/utils/timeTranfer.js'
 class CommissionPaidHistoryRepository extends BaseRepository {
   constructor() {
     super(commissionPaidHistoryModel)
@@ -118,6 +120,46 @@ class CommissionPaidHistoryRepository extends BaseRepository {
       throw new Error('Lịch sử hoa hồng không tồn tại')
     }
     return result[0]
+  }
+
+  /**
+   * Tính toán hoa hồng cho khoảng thời gian
+   */
+  async calculateForPeriod(period) {
+    const timeInfo = getReportTimeInfo(period || '1month')
+    const { utcDateRange } = timeInfo
+    const pipeline = [
+      {
+        $match: {
+          status: REFUND_STATUS.COMPLETED,
+          createdAt: {
+            $gte: utcDateRange.startDate,
+            $lte: utcDateRange.endDate
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalCalculated: { $sum: '$amount' },
+          totalComissions: { $sum: 1 }
+        }
+      },
+
+      {
+        $project: {
+          _id: 0
+        }
+      }
+    ]
+
+    const result = await this.model.aggregate(pipeline)
+    return (
+      result[0] || {
+        totalCalculated: 0,
+        totalCommissions: 0
+      }
+    )
   }
 }
 

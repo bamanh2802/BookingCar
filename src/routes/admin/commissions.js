@@ -9,7 +9,7 @@ const Router = express.Router()
 Router.get('/stats', adminAuth, adminCommissionController.getCommissionStats)
 
 // Calculate all commissions for a period
-Router.post('/calculate', adminAuth, adminCommissionController.calculateAllCommissions)
+Router.get('/calculate', adminAuth, adminCommissionController.calculateAllCommissions)
 
 // Get all commissions (Admin only)
 Router.route('/')
@@ -30,4 +30,4 @@ Router.patch('/:commissionId/pay', adminAuth, adminCommissionController.payCommi
 // Get commissions by user
 Router.get('/user/:userId', adminAuth, adminCommissionController.getCommissionsByUser)
 
-export const adminCommissionRoutes = Router 
+export const adminCommissionRoutes = Router
