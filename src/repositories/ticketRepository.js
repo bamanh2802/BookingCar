@@ -328,12 +328,12 @@ class TicketRequestRepository extends BaseRepository {
   //Lấy doanh thu cho admin
   async getRevenueStatsByRole(filter, period) {
     const timeInfo = getReportTimeInfo(period || '7days')
-    const { utcDateRange, groupingInfo } = timeInfo
-    const { groupByFormat, timezone, labels: allLabels } = groupingInfo
     if (!timeInfo) {
-      // Thêm kiểm tra phòng trường hợp timeInfo là null
       throw new Error('Invalid period provided for report.')
     }
+
+    const { utcDateRange, groupingInfo } = timeInfo
+    const { groupByFormat, timezone, labels: allLabels } = groupingInfo
 
     const pipeline = [
       {
@@ -347,12 +347,24 @@ class TicketRequestRepository extends BaseRepository {
         }
       },
       {
+        // Tính số ghế (seats.length) cho mỗi ticket
+        $project: {
+          createdAt: 1,
+          price: 1,
+          seatCount: { $size: '$seats' }
+        }
+      },
+      {
         $group: {
           _id: {
-            $dateToString: { format: groupByFormat, date: '$createdAt', timezone }
+            $dateToString: {
+              format: groupByFormat,
+              date: '$createdAt',
+              timezone
+            }
           },
           totalRevenue: { $sum: '$price' },
-          totalTickets: { $sum: 1 }
+          totalTickets: { $sum: '$seatCount' }
         }
       },
       {
@@ -362,8 +374,10 @@ class TicketRequestRepository extends BaseRepository {
 
     const chartDataRaw = await this.model.aggregate(pipeline)
 
+    // Bổ sung dữ liệu trống nếu có tuần/ngày/tháng nào không có data
     const chartData = fillMissingChartData(chartDataRaw, allLabels)
 
+    // Tính tổng toàn kỳ
     const totals = chartData.reduce(
       (acc, item) => {
         acc.totalRevenue += item.totalRevenue
@@ -374,6 +388,48 @@ class TicketRequestRepository extends BaseRepository {
     )
 
     return { ...totals, chartData }
+  }
+
+  async getRevenueTicketType({ startDate, endDate }) {
+    const pipeline = [
+      {
+        $match: {
+          status: TICKET_STATUS.DONE,
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        }
+      },
+      {
+        $project: {
+          type: 1,
+          price: 1,
+          seatCount: { $size: '$seats' }
+        }
+      },
+      {
+        $group: {
+          _id: '$type',
+          totalRevenue: { $sum: '$price' },
+          ticketSold: { $sum: '$seatCount' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          ticketType: '$_id',
+          totalRevenue: 1,
+          ticketSold: 1
+        }
+      },
+      {
+        $sort: { totalRevenue: -1 }
+      }
+    ]
+
+    const result = await this.model.aggregate(pipeline) // thiếu await
+    return result || []
   }
 }
 

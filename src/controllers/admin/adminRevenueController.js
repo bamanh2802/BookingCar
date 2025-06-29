@@ -35,4 +35,10 @@ const getAllRevenues = catchAsync(async (req, res) => {
   return res.status(StatusCodes.OK).json(ApiResponse.success(revenue, 'Lấy doanh thu thành công'))
 })
 
-export const adminRevenueController = { getAllRevenues }
+const getRevenueTicketType = catchAsync(async (req, res) => {
+  const { monthYear } = req.query || '7days'
+  const results = await adminRevenueService.getRevenueTicketType(monthYear)
+  return res.status(StatusCodes.OK).json(ApiResponse.success(results, 'Lấy doanh thu theo loại vé thành công'))
+})
+
+export const adminRevenueController = { getAllRevenues, getRevenueTicketType }
