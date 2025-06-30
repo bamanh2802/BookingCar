@@ -8,7 +8,7 @@ import seatMapRepository from '~/repositories/seatMapRepository'
 import { ticketService } from './ticketService'
 import { REASON_REFUND, REFUND_STATUS, TICKET_STATUS, TITLE_TICKET_REQUESTS, USER_ROLES } from '~/constants'
 import userRepository from '~/repositories/userRepository'
-import { pickTrip } from '~/utils/formatter'
+import { pickTrip, pickUser } from '~/utils/formatter'
 import refundHistoryRepository from '~/repositories/refundHistoryRepository'
 import bankAccountRepository from '~/repositories/bankAccountRepository'
 import ticketRepository from '~/repositories/ticketRepository'
@@ -106,7 +106,8 @@ const getTicketRequests = async (filter = {}, page = 1, limit = 10) => {
 
   const mappedResults = results.map((item) => ({
     ...item,
-    tripInfo: pickTrip(item.tripInfo)
+    tripInfo: pickTrip(item.tripInfo),
+    creatorInfo: item.creatorInfo ? pickUser(item.creatorInfo) : null
   }))
   return { results: mappedResults, pagination }
 }

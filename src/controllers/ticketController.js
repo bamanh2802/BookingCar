@@ -37,8 +37,6 @@ const getTicketsCreatedBy = catchAsync(async (req, res) => {
     const agentLv2Ids = agentLv2List.map((agent) => agent._id)
     filter.createdBy = [req.user._id, ...agentLv2Ids]
     filter.userId = [req.user._id, ...agentLv2Ids]
-
-    console.log(filter)
   }
   const tickets = await ticketService.getTickets(filter, page, limit)
   return res.status(StatusCodes.OK).json(ApiResponse.success(tickets, 'Lấy danh sách vé thành công'))
