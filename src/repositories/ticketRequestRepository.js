@@ -78,34 +78,31 @@ class TicketRequestRepository extends BaseRepository {
   async findTicketRequestsWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
     const matchConditions = []
 
-    const convertToObjectId = (val) => {
-      if (Array.isArray(val)) return val.map((v) => new Types.ObjectId(v))
-      return new Types.ObjectId(val)
+    // Chuyển string/ObjectId => ObjectId[] an toàn
+    const convertToObjectIdArray = (val) => {
+      if (Array.isArray(val)) {
+        return val.map((v) => new Types.ObjectId(v.toString()))
+      }
+      return [new Types.ObjectId(val.toString())]
     }
 
+    // Xử lý $or cho createdBy và userId
     const orConditions = []
-
     if (filter.createdBy) {
       orConditions.push({
-        createdBy: {
-          $in: convertToObjectId(filter.createdBy)
-        }
+        createdBy: { $in: convertToObjectIdArray(filter.createdBy) }
       })
     }
-
     if (filter.userId) {
       orConditions.push({
-        userId: {
-          $in: convertToObjectId(filter.userId)
-        }
+        userId: { $in: convertToObjectIdArray(filter.userId) }
       })
     }
-
     if (orConditions.length > 0) {
       matchConditions.push({ $or: orConditions })
     }
 
-    // Các điều kiện khác (ngoại trừ createdBy, userId)
+    // Lấy các filter khác
     const otherFilters = { ...filter }
     delete otherFilters.createdBy
     delete otherFilters.userId
@@ -116,11 +113,14 @@ class TicketRequestRepository extends BaseRepository {
 
     const matchFilter = matchConditions.length > 0 ? { $and: matchConditions } : {}
 
+    // Aggregate
     const results = await this.model.aggregate([
       { $match: matchFilter },
       { $sort: sort },
       { $skip: (page - 1) * limit },
       { $limit: limit },
+
+      // Join thông tin trip
       {
         $lookup: {
           from: 'trips',
@@ -130,6 +130,8 @@ class TicketRequestRepository extends BaseRepository {
         }
       },
       { $unwind: { path: '$tripInfo', preserveNullAndEmptyArrays: true } },
+
+      // Join thông tin nhà xe
       {
         $lookup: {
           from: 'carcompanies',
@@ -139,6 +141,8 @@ class TicketRequestRepository extends BaseRepository {
         }
       },
       { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
+
+      // Join người tạo
       {
         $lookup: {
           from: 'users',
@@ -148,6 +152,8 @@ class TicketRequestRepository extends BaseRepository {
         }
       },
       { $unwind: { path: '$creatorInfo', preserveNullAndEmptyArrays: true } },
+
+      // Join role
       {
         $lookup: {
           from: 'userroles',
@@ -157,6 +163,8 @@ class TicketRequestRepository extends BaseRepository {
         }
       },
       { $unwind: { path: '$creatorRole', preserveNullAndEmptyArrays: true } },
+
+      // Loại field nặng/không cần thiết
       {
         $project: {
           'carCompanyInfo.seatMap': 0,
@@ -165,7 +173,6 @@ class TicketRequestRepository extends BaseRepository {
           'creatorRole.updatedAt': 0,
           'creatorRole.__v': 0,
           'creatorRole.inherits': 0,
-
           __v: 0
         }
       }
