@@ -5,7 +5,7 @@ import seatMapRepository from '~/repositories/seatMapRepository'
 import { ConflictError, NotFoundError } from '~/utils/errors'
 import { toUTC } from '~/utils/timeTranfer'
 import mongoose from 'mongoose'
-import { pickTrip } from '~/utils/formatter'
+import { pickTrip, pickUser } from '~/utils/formatter'
 
 /**
  * Tạo mới vé
@@ -26,7 +26,8 @@ const getTickets = async (filter = {}, page = 1, limit = 10) => {
   }
   data.results = data.results.map((ticket) => ({
     ...ticket,
-    tripInfo: ticket.tripInfo ? pickTrip(ticket.tripInfo) : null
+    tripInfo: ticket.tripInfo ? pickTrip(ticket.tripInfo) : null,
+    creatorInfo: ticket.creatorInfo ? pickUser(ticket.creatorInfo) : null
   }))
   return data
 }

@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes'
 import ms from 'ms'
 import { authService } from '~/services/authService'
 import { userService } from '~/services/userService'
@@ -85,10 +86,23 @@ const getMyCreatedUsers = catchAsync(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10
 
   const result = await userService.getUsersCreatedByParent(currentUserId, page, limit)
-  
-  return res.status(200).json(
-    ApiResponse.success(result, 'Lấy danh sách người dùng được tạo thành công')
-  )
+
+  return res.status(200).json(ApiResponse.success(result, 'Lấy danh sách người dùng được tạo thành công'))
+})
+
+const logout = catchAsync(async (req, res) => {
+  res.clearCookie('accessToken', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none'
+  })
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none'
+  })
+  return res.status(StatusCodes.OK).json(ApiResponse.success(null, 'Đăng xuất thành công'))
 })
 
 // Admin functions moved to adminUserController.js
@@ -99,5 +113,6 @@ export const userController = {
   updateProfile,
   getProfile,
   refreshToken,
-  getMyCreatedUsers
+  getMyCreatedUsers,
+  logout
 }

@@ -154,9 +154,48 @@ class TicketRequestRepository extends BaseRepository {
    */
 
   async findTicketsWithPagination(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
-    // Lấy danh sách vé phân trang kèm thông tin tripInfo
+    const matchConditions = []
+
+    const convertToObjectId = (val) => {
+      if (Array.isArray(val)) return val.map((v) => new Types.ObjectId(v))
+      return new Types.ObjectId(val)
+    }
+
+    const orConditions = []
+
+    if (filter.createdBy) {
+      orConditions.push({
+        createdBy: {
+          $in: convertToObjectId(filter.createdBy)
+        }
+      })
+    }
+
+    if (filter.userId) {
+      orConditions.push({
+        userId: {
+          $in: convertToObjectId(filter.userId)
+        }
+      })
+    }
+
+    if (orConditions.length > 0) {
+      matchConditions.push({ $or: orConditions })
+    }
+
+    // Các điều kiện khác (ngoại trừ createdBy, userId)
+    const otherFilters = { ...filter }
+    delete otherFilters.createdBy
+    delete otherFilters.userId
+
+    if (Object.keys(otherFilters).length > 0) {
+      matchConditions.push(otherFilters)
+    }
+
+    const matchFilter = matchConditions.length > 0 ? { $and: matchConditions } : {}
+
     const results = await this.model.aggregate([
-      { $match: filter },
+      { $match: matchFilter },
       { $sort: sort },
       { $skip: (page - 1) * limit },
       { $limit: limit },
@@ -179,12 +218,39 @@ class TicketRequestRepository extends BaseRepository {
       },
       { $unwind: { path: '$carCompanyInfo', preserveNullAndEmptyArrays: true } },
       {
+        $lookup: {
+          from: 'users',
+          localField: 'createdBy',
+          foreignField: '_id',
+          as: 'creatorInfo'
+        }
+      },
+      { $unwind: { path: '$creatorInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'userroles',
+          localField: 'creatorInfo.roleId',
+          foreignField: '_id',
+          as: 'creatorRole'
+        }
+      },
+      { $unwind: { path: '$creatorRole', preserveNullAndEmptyArrays: true } },
+      {
         $project: {
-          'carCompanyInfo.seatMap': 0
+          'carCompanyInfo.seatMap': 0,
+          'creatorRole.permissions': 0,
+          'creatorRole.createdAt': 0,
+          'creatorRole.updatedAt': 0,
+          'creatorRole.__v': 0,
+          'creatorRole.inherits': 0,
+
+          __v: 0
         }
       }
     ])
-    const total = await this.count(filter)
+
+    const total = await this.count(matchFilter)
+
     return {
       results,
       pagination: {
