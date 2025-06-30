@@ -4,7 +4,7 @@ import { ApiError } from '~/utils/errors'
 
 // Cấu hình CORS Option trong dự án thực tế
 // Danh sách các domain được chấp nhận CORS
-const WHITELIST_DOMAINS = ['http://localhost:5173', 'http://localhost:3000', 'https://vexenay.com']
+const WHITELIST_DOMAINS = ['http://localhost:5173', 'http://localhost:3000', 'https://vexenay.com', 'https://admin.vexenay.com']
 
 //config dynamic cors
 export const corsOptions = {
