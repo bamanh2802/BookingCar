@@ -41,7 +41,7 @@ const adminAuthenticate = catchAsync(async (req, res, next) => {
     }
 
     // Strict Admin role check - only Admin role allowed
-    if (userRole.roleName !== 'Admin') {
+    if (userRole.roleName === 'Client') {
       throw new AuthenticationError('Access denied. Admin privileges required.')
     }
 
@@ -63,7 +63,7 @@ const adminAuthenticate = catchAsync(async (req, res, next) => {
     if (error.name === 'JsonWebTokenError') {
       throw new AuthenticationError('Invalid admin token. Please login again.')
     }
-    
+
     // Re-throw custom authentication errors
     throw error
   }
@@ -81,7 +81,7 @@ const adminHasPermission = (...permissions) => {
     }
 
     // Double-check Admin role (redundant but safe)
-    if (req.userRole.roleName !== 'Admin') {
+    if (req.userRole.roleName === 'Client') {
       throw new AuthenticationError('Admin role required for this operation.')
     }
 
@@ -126,7 +126,10 @@ export const adminAuth = [adminAuthenticate]
  * Enhanced admin middlewares for specific admin operations
  */
 // User management permissions
-export const adminUserManagement = [adminAuthenticate, adminHasPermission(PERMISSIONS.VIEW_USERS, PERMISSIONS.CREATE_USER, PERMISSIONS.UPDATE_USER, PERMISSIONS.DELETE_USER)]
+export const adminUserManagement = [
+  adminAuthenticate,
+  adminHasPermission(PERMISSIONS.VIEW_USERS, PERMISSIONS.CREATE_USER, PERMISSIONS.UPDATE_USER, PERMISSIONS.DELETE_USER)
+]
 export const adminUserCreate = [adminAuthenticate, adminHasPermission(PERMISSIONS.CREATE_USER)]
 export const adminUserUpdate = [adminAuthenticate, adminHasPermission(PERMISSIONS.UPDATE_USER)]
 export const adminUserDelete = [adminAuthenticate, adminHasPermission(PERMISSIONS.DELETE_USER)]
