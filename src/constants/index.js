@@ -85,7 +85,8 @@ export const DOCUMENT_NAMES = {
   TICKET_REQUEST: 'TicketRequest',
   COMMISSION: 'Commission',
   REFUND_HISTORY: 'RefundHistory',
-  COMMISSION_PAID_HISTORY: 'CommissionPaidHistory'
+  COMMISSION_PAID_HISTORY: 'CommissionPaidHistory',
+  REFERRAL_CODE: 'ReferralCode'
 }
 
 // Các quyền hạn chi tiết

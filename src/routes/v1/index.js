@@ -9,6 +9,7 @@ import { ticketRequestRoutes } from './ticketRequestRoutes'
 import { ticketRoutes } from './ticketRoutes'
 import { adminRoutes } from '../admin/index.js'
 import { commissionRoutes } from './commissionRoutes'
+import { referralCodeRoutes } from './referralCodeRoutes'
 
 const Router = express.Router()
 
@@ -28,5 +29,6 @@ Router.use('/trips', tripRoutes)
 Router.use('/ticket-requests', ticketRequestRoutes)
 Router.use('/tickets', ticketRoutes)
 Router.use('/commissions', commissionRoutes)
+Router.use('/referral-codes', referralCodeRoutes)
 
 export const API_V1 = Router
