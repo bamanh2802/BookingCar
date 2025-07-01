@@ -2,6 +2,11 @@
  * File tập trung tất cả các constants trong dự án
  */
 
+export const QUICK_ACTION_TITLES = {
+  QUICK_LOAN: 'Quick Loan',
+  ASSIST_BOOK_TICKET: 'Assist Book Ticket'
+}
+
 export const TYPES_NOTIFICATION = {
   SUCCESS: 'Success',
   SYSTEM: 'System',
@@ -92,7 +97,8 @@ export const DOCUMENT_NAMES = {
   TICKET_REQUEST: 'TicketRequest',
   COMMISSION: 'Commission',
   REFUND_HISTORY: 'RefundHistory',
-  COMMISSION_PAID_HISTORY: 'CommissionPaidHistory'
+  COMMISSION_PAID_HISTORY: 'CommissionPaidHistory',
+  QUICK_ACTION: 'QuickAction'
 }
 
 // Các quyền hạn chi tiết

@@ -9,6 +9,8 @@ import { ticketRequestRoutes } from './ticketRequestRoutes'
 import { ticketRoutes } from './ticketRoutes'
 import { adminRoutes } from '../admin/index.js'
 import { commissionRoutes } from './commissionRoutes'
+import { notificationRoutes } from './notificationRoutes'
+import { quickActionRoutes } from './quickActionRoutes'
 
 const Router = express.Router()
 
@@ -28,5 +30,6 @@ Router.use('/trips', tripRoutes)
 Router.use('/ticket-requests', ticketRequestRoutes)
 Router.use('/tickets', ticketRoutes)
 Router.use('/commissions', commissionRoutes)
-
+Router.use('/notification', notificationRoutes)
+Router.use('/quick-action', quickActionRoutes)
 export const API_V1 = Router
