@@ -2,6 +2,18 @@
  * File tập trung tất cả các constants trong dự án
  */
 
+export const QUICK_ACTION_TITLES = {
+  QUICK_LOAN: 'Quick Loan',
+  ASSIST_BOOK_TICKET: 'Assist Book Ticket'
+}
+
+export const TYPES_NOTIFICATION = {
+  SUCCESS: 'Success',
+  SYSTEM: 'System',
+  INFO: 'Info',
+  REJECTED: 'Rejected'
+}
+
 export const REASON_REFUND = {
   TICKET_CANCELLED: 'Ticket Cancelled', // Vé bị hủy
   TRIP_CANCELLED: 'Trip Cancelled', // Chuyến đi bị hủy
@@ -86,7 +98,9 @@ export const DOCUMENT_NAMES = {
   COMMISSION: 'Commission',
   REFUND_HISTORY: 'RefundHistory',
   COMMISSION_PAID_HISTORY: 'CommissionPaidHistory',
-  REFERRAL_CODE: 'ReferralCode'
+  REFERRAL_CODE: 'ReferralCode',
+  QUICK_ACTION: 'QuickAction'
+
 }
 
 // Các quyền hạn chi tiết

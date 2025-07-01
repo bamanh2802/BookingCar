@@ -1,11 +1,10 @@
-const { env } = require('~/config/environment')
-const { jwtProvider } = require('~/providers/jwtProvider')
-const { catchAsync } = require('~/utils/catchAsync')
-const { AuthenticationError } = require('~/utils/errors')
+import { env } from '~/config/environment'
+import { jwtProvider } from '~/providers/jwtProvider'
+import { catchAsync } from '~/utils/catchAsync'
+import { AuthenticationError } from '~/utils/errors'
 
 export const socketAuthMiddleware = catchAsync(async (socket, next) => {
   const token = socket.handshake.auth?.token
-
   if (!token) next(new AuthenticationError('Token không tồn tại'))
 
   try {
