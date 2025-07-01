@@ -11,7 +11,7 @@ const quickActionSchema = new Schema(
     },
     title: {
       type: String,
-      enum: [QUICK_ACTION_TITLES.ASSIST_BOOK_TICKET, QUICK_ACTION_TITLES.QUICK_LOAN],
+      enum: [QUICK_ACTION_TITLES.ASSIST_BOOK_TICKET, QUICK_ACTION_TITLES.QUICK_LOAN, QUICK_ACTION_TITLES.REPORT],
       required: true,
       index: true
     },

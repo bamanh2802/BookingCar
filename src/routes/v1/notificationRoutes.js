@@ -8,5 +8,5 @@ Router.route('/')
   .get(authMiddleware.authenticate, notificationController.getUserNotifications)
   .patch(authMiddleware.authenticate, notificationController.markAllNotificationsAsRead)
 
-Router.route('/notificationId').patch(authMiddleware.authenticate, notificationController.markNotificationAsRead)
+Router.route('/:notificationId').patch(authMiddleware.authenticate, notificationController.markNotificationAsRead)
 export const notificationRoutes = Router

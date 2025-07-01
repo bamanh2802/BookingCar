@@ -1,10 +1,12 @@
 import { env } from '~/config/environment'
 import { jwtProvider } from '~/providers/jwtProvider'
 import { catchAsync } from '~/utils/catchAsync'
+import { parseCookies } from '~/utils/cookieParser'
 import { AuthenticationError } from '~/utils/errors'
 
 export const socketAuthMiddleware = catchAsync(async (socket, next) => {
-  const token = socket.handshake.auth?.token
+  const cookies = parseCookies(socket.handshake.headers.cookie);
+  const token = cookies.accessToken;
   if (!token) next(new AuthenticationError('Token không tồn tại'))
 
   try {

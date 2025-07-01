@@ -24,7 +24,7 @@ const markAllNotificationsAsRead = catchAsync(async (req, res) => {
 //Đọc 1 thông báo
 const markNotificationAsRead = catchAsync(async (req, res) => {
   const userId = req.user._id
-  const notificationId = req.params
+  const { notificationId } = req.params
 
   await userNotificationService.markNotificationAsRead(notificationId, userId)
 

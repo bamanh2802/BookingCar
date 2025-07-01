@@ -4,7 +4,8 @@
 
 export const QUICK_ACTION_TITLES = {
   QUICK_LOAN: 'Quick Loan',
-  ASSIST_BOOK_TICKET: 'Assist Book Ticket'
+  ASSIST_BOOK_TICKET: 'Assist Book Ticket',
+  REPORT: 'Report'
 }
 
 export const TYPES_NOTIFICATION = {
