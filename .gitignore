@@ -50,6 +50,7 @@ node_modules/
 # tasks.json
 # tasks/
 
+scripts/
 .cursor
 .taskmaster
 .env.example
