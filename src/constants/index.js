@@ -98,7 +98,9 @@ export const DOCUMENT_NAMES = {
   COMMISSION: 'Commission',
   REFUND_HISTORY: 'RefundHistory',
   COMMISSION_PAID_HISTORY: 'CommissionPaidHistory',
+  REFERRAL_CODE: 'ReferralCode',
   QUICK_ACTION: 'QuickAction'
+
 }
 
 // Các quyền hạn chi tiết
