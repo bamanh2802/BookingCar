@@ -2,6 +2,13 @@
  * File tập trung tất cả các constants trong dự án
  */
 
+export const TYPES_NOTIFICATION = {
+  SUCCESS: 'Success',
+  SYSTEM: 'System',
+  INFO: 'Info',
+  REJECTED: 'Rejected'
+}
+
 export const REASON_REFUND = {
   TICKET_CANCELLED: 'Ticket Cancelled', // Vé bị hủy
   TRIP_CANCELLED: 'Trip Cancelled', // Chuyến đi bị hủy

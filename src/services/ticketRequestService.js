@@ -12,6 +12,7 @@ import { pickTrip, pickUser } from '~/utils/formatter'
 import refundHistoryRepository from '~/repositories/refundHistoryRepository'
 import bankAccountRepository from '~/repositories/bankAccountRepository'
 import ticketRepository from '~/repositories/ticketRepository'
+import { notifyAgentsAndAdminsOnTicketRequest } from './notificationService'
 /**
  * Tạo yêu cầu vé mới
  */
@@ -82,11 +83,14 @@ const createTicketRequest = async (ticketRequest, currentUser) => {
     }
     // Tạo yêu cầu vé mới
     const newTicketRequest = await ticketRequestRepository.createTicketRequest(ticketRequest)
+    await notifyAgentsAndAdminsOnTicketRequest(ticketRequest, currentUser)
     return newTicketRequest
   }
 
   // Tạo yêu cầu vé mới
   const newTicketRequest = await ticketRequestRepository.createTicketRequest(ticketRequest)
+  await notifyAgentsAndAdminsOnTicketRequest(ticketRequest, currentUser)
+
   return newTicketRequest
 }
 
