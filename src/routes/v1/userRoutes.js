@@ -6,6 +6,8 @@ import { authMiddleware } from '~/middlewares/authMiddleware'
 import ApiResponse from '~/utils/ApiResponse'
 import { bankAccountValidation } from '~/validations/bankAccountvalidation'
 import { userValidation } from '~/validations/userValidation'
+import { passwordResetValidation } from '~/validations/passwordResetValidation'
+import { passwordResetController } from '~/controllers/passwordResetController'
 
 const Router = express.Router()
 
@@ -19,6 +21,16 @@ Router.route('/register').post(userValidation.register, userController.register)
 Router.route('/login').post(userValidation.login, userController.login)
 Router.route('/refresh-token').post(userController.refreshToken)
 Router.route('/logout').delete(userController.logout)
+
+// Password Reset Routes
+Router.route('/forgot-password').post(
+  passwordResetValidation.forgotPassword,
+  passwordResetController.forgotPassword
+)
+Router.route('/reset-password').post(
+  passwordResetValidation.resetPassword,
+  passwordResetController.resetPassword
+)
 
 // Các routes yêu cầu xác thực
 Router.route('/profile')
