@@ -9,8 +9,7 @@ const createQuickAction = catchAsync(async (req, res) => {
 
 const updateQuickAction = catchAsync(async (req, res) => {
   const { quickActionId } = req.params
-  console.log(quickActionId)
-  console.log(req.body)
+
   const quickAction = await quickActionService.updateQuickAction(quickActionId, req.body)
   return res.status(StatusCodes.OK).json(ApiResponse.success(quickAction, 'Cập nhật yêu cầu nhanh thành công'))
 })

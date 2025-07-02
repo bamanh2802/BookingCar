@@ -1,4 +1,4 @@
-import { REASON_REFUND, REFUND_STATUS } from '~/constants'
+import { REASON_REFUND, REFUND_STATUS, USER_ROLES } from '~/constants'
 import commissionPaidHistoryRepository from '~/repositories/commissionPaidHistoryRepository'
 import commissionRepository from '~/repositories/commissionRepository'
 import userRepository from '~/repositories/userRepository'
@@ -80,13 +80,13 @@ const payCommissionForTicket = async (ticket, session) => {
 
   // Nếu có người đặt hộ (createdBy), trả hoa hồng cho người này
   let agencyCommissionResult = null
-  if (ticket.createdBy) {
-    const agencyUser = await userRepository.findById(ticket.createdBy)
+  if (user.parentId) {
+    const agencyUser = await userRepository.findById(user.parentId)
     if (agencyUser) {
       // Lấy thông tin hoa hồng theo role của người đặt hộ
-      const agencyCommission = await commissionRepository.findByRoleId(agencyUser.roleId)
-      if (agencyCommission) {
-        const agencyCommissionAmount = (ticket.price * agencyCommission.percent) / 100
+      const agencyRole = await userRoleRepository.findById(agencyUser.roleId)
+      if (agencyRole && agencyRole.roleName !== USER_ROLES.ADMIN) {
+        const agencyCommissionAmount = (ticket.price * 1.5) / 100
         const agencyNewBalance = (agencyUser.amount || 0) + agencyCommissionAmount
         const updatedAgencyUser = await userRepository.updateById(
           agencyUser._id,

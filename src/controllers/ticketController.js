@@ -18,7 +18,7 @@ const createTicket = catchAsync(async (req, res) => {
  * Lấy danh sách vé (dành cho admin, agent lv1,agent lv2)
  */
 const getTicketsCreatedBy = catchAsync(async (req, res) => {
-  const { page, limit } = req.query
+  const { page = 1, limit = 10 } = req.query
   let filter = req.query.filter || {}
 
   if (req.user.roleName === USER_ROLES.AGENT_LV2) {
@@ -38,7 +38,7 @@ const getTicketsCreatedBy = catchAsync(async (req, res) => {
     filter.createdBy = [req.user._id, ...agentLv2Ids]
     filter.userId = [req.user._id, ...agentLv2Ids]
   }
-  const tickets = await ticketService.getTickets(filter, page, limit)
+  const tickets = await ticketService.getTickets(filter, parseInt(page), parseInt(limit))
   return res.status(StatusCodes.OK).json(ApiResponse.success(tickets, 'Lấy danh sách vé thành công'))
 })
 
