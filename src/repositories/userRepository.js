@@ -22,6 +22,25 @@ class UserRepository extends BaseRepository {
   }
 
   /**
+   * Find user by email
+   * @param {String} email - Email
+   * @returns {Promise<Object>} User document
+   */
+  async findByEmail(email) {
+    return this.findOne({ email })
+  }
+
+  /**
+   * Update user's password
+   * @param {String} email - User's email
+   * @param {String} newPassword - The new hashed password
+   * @returns {Promise<Object>} Result of the update operation
+   */
+  async updatePassword(email, newPassword) {
+    return this.model.updateOne({ email }, { $set: { password: newPassword } })
+  }
+
+  /**
    * Tìm người dùng theo ID với thông tin role
    * @param {String} id - User ID
    * @returns {Promise<Object>} User document với roleName
