@@ -8,7 +8,7 @@ import { quickActionValidation } from '~/validations/quickActionValidation'
 const Router = express.Router()
 
 // Get revenue (Admin only)
-Router.route('/').get(authMiddleware.restrictTo(USER_ROLES.ADMIN, USER_ROLES.AGENT_LV1, USER_ROLES.AGENT_LV2), quickActionController.getAllQuickAction)
+Router.route('/').get(authMiddleware.authenticate, authMiddleware.restrictTo(USER_ROLES.ADMIN, USER_ROLES.AGENT_LV1, USER_ROLES.AGENT_LV2), quickActionController.getAllQuickAction)
 
 Router.route('/:quickActionId').patch(
   adminAuth,

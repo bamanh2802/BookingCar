@@ -9,7 +9,7 @@ let io = null
 export const initialSocketServer = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: ['http://localhost:3000', 'https://vexenay.com', 'https://admin.vexenay.com'],
+      origin: ['http://localhost:3000', 'https://vexenay.com', 'https://admin.vexenay.com', 'http://localhost:5173'],
       methods: ['GET', 'POST'],
       credentials: true
     }

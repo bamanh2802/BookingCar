@@ -15,6 +15,7 @@ const authenticate = catchAsync(async (req, res, next) => {
   // Lấy token từ cookie hoặc Authorization header
   let token = req.cookies?.accessToken
 
+
   // Nếu không có trong cookie, kiểm tra trong header
   if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
     token = req.headers.authorization.split(' ')[1]
