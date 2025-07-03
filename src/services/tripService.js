@@ -15,7 +15,6 @@ import { commissionService } from './commissionService'
 const getTrips = async (reqQuery = {}, page = 1, limit = 10) => {
   const { day, ...otherFilters } = reqQuery
   let filter = { ...otherFilters }
-  console.log(reqQuery)
 
   if (day) {
     const { startOfDay, endOfDay } = dayRangeUTC(day)
@@ -47,18 +46,6 @@ const createTrip = async (tripData) => {
   try {
     const { startLocation, endLocation, startStation, endStation, startTime, endTime, price, carCompanyId, type } =
       tripData
-
-    // kiểm tra xem chuyến đi đã tồn tại hay chưa
-    const existedTrip = await tripRespository.checkExistingTrip(
-      startLocation,
-      endLocation,
-      toUTC(startTime),
-      toUTC(endTime),
-      carCompanyId
-    )
-    if (existedTrip) {
-      throw new ConflictError('Chuyến đi đã tồn tại')
-    }
 
     // kiểm tra xem công ty xe có tồn tại hay không
     const carCompany = await carCompanyRepository.findById(carCompanyId)
