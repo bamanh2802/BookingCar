@@ -17,7 +17,7 @@ const createCarCompany = catchAsync(async (req, res) => {
 const getCarCompanies = catchAsync(async (req, res) => {
   const { page, limit } = req.query
   const filter = req.query.filter || {}
-  const carCompanies = await carCompanyService.getCarCompanies(filter, page, limit)
+  const carCompanies = await carCompanyService.getCarCompanies(filter, parseInt(page), parseInt(limit))
   return res.status(StatusCodes.OK).json(ApiResponse.success(carCompanies, 'Lấy danh sách công ty xe thành công'))
 })
 
