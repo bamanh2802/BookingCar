@@ -8,8 +8,8 @@ import { catchAsync } from '~/utils/catchAsync'
  */
 
 const getTrips = catchAsync(async (req, res) => {
-  const { page = 1, limit = 10, ...reqQuery } = req.query
-  const trips = await tripService.getTrips(reqQuery, parseInt(page), limit)
+  const { page = 1, limit = 99, ...reqQuery } = req.query
+  const trips = await tripService.getTrips(reqQuery, parseInt(page), parseInt(limit))
   res.status(StatusCodes.OK).json(ApiResponse.success(trips, 'Lấy danh sách chuyến đi thành công'))
 })
 
