@@ -1,8 +1,7 @@
 import crypto from 'crypto'
 import { referralCodeRepository } from '~/repositories/referralCodeRepository'
 import userRepository from '~/repositories/userRepository'
-import { ConflictError, ForbiddenError, NotFoundError } from '~/utils/errors'
-import { USER_ROLES } from '~/constants'
+import { ConflictError, NotFoundError } from '~/utils/errors'
 
 class ReferralCodeService {
   async generateReferralCode(currentUser, body) {
@@ -91,4 +90,4 @@ class ReferralCodeService {
   }
 }
 
-export const referralCodeService = new ReferralCodeService() 
+export const referralCodeService = new ReferralCodeService()

@@ -19,6 +19,7 @@ const getTrips = async (reqQuery = {}, page = 1, limit = 10) => {
   if (day) {
     const { startOfDay, endOfDay } = dayRangeUTC(day)
     filter.startTime = { $gte: startOfDay, $lte: endOfDay }
+    console.log(filter.startTime)
   }
   const trips = await tripRespository.findAllTripWithPagination(filter, page, limit)
   return trips
