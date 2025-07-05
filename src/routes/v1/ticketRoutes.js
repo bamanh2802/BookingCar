@@ -40,7 +40,7 @@ Router.route('/:ticketId')
   )
   .patch(
     authMiddleware.authenticate,
-    authMiddleware.checkUpdateOrCancelTicket,
+    // authMiddleware.checkUpdateOrCancelTicket,
     ticketValidation.updateTicket,
     ticketController.updateTicket
   )
