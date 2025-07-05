@@ -56,6 +56,7 @@ const updateTicket = async (ticketId, updateData) => {
 
   const trip = await tripRespository.findTripById(ticketExists.tripId)
   const currentTime = new Date()
+  console.log(ticketExists.tripId)
   if (toUTC(currentTime) > trip.startTime)
     throw new ConflictError('Thời gian yêu cầu vé không hợp lệ, chuyến đi đã bắt đầu')
 

@@ -5,7 +5,7 @@ import userRoleRepository from '~/repositories/userRoleRepository'
 import { catchAsync } from '~/utils/catchAsync'
 import { AuthenticationError } from '~/utils/errors'
 import ticketRequestRepository from '~/repositories/ticketRequestRepository'
-import { TICKET_STATUS, PERMISSIONS } from '~/constants'
+import { TICKET_STATUS, PERMISSIONS, TITLE_TICKET_REQUESTS } from '~/constants'
 
 /**
  * Middleware kiểm tra người dùng đã đăng nhập chưa
@@ -14,7 +14,6 @@ import { TICKET_STATUS, PERMISSIONS } from '~/constants'
 const authenticate = catchAsync(async (req, res, next) => {
   // Lấy token từ cookie hoặc Authorization header
   let token = req.cookies?.accessToken
-
 
   // Nếu không có trong cookie, kiểm tra trong header
   if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
@@ -252,8 +251,8 @@ const checkViewTicketRequestById = catchAsync(async (req, res, next) => {
  * Nếu status là CANCELLED thì chỉ cần authenticate, ngược lại phải có quyền UPDATE_TICKET
  */
 const checkUpdateOrCancelTicket = catchAsync((req, res, next) => {
-  const { status } = req.body
-  if (status === TICKET_STATUS.CANCELLED) {
+  const { titleRequest } = req.body
+  if (titleRequest === TITLE_TICKET_REQUESTS.CANCEL_TICKET) {
     return next()
   }
   return authMiddleware.hasPermission(PERMISSIONS.UPDATE_TICKET)(req, res, next)

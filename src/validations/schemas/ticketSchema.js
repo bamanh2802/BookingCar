@@ -86,6 +86,7 @@ const ticketSchema = Joi.object({
  */
 
 const ticketUpdateSchema = Joi.object({
+  titleRequest: Joi.string().optional(),
   status: Joi.string()
     .valid(TICKET_STATUS.PENDING, TICKET_STATUS.CONFIRMED, TICKET_STATUS.CANCELLED, TICKET_STATUS.REFUNDED)
     .messages({
