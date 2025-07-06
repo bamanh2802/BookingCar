@@ -158,7 +158,7 @@ class TicketRequestRepository extends BaseRepository {
 
     const convertToObjectId = (val) => {
       if (Array.isArray(val)) return val.map((v) => new Types.ObjectId(v))
-      return new Types.ObjectId(val)
+      return [new Types.ObjectId(val)]
     }
 
     const orConditions = []
