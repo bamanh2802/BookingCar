@@ -33,6 +33,12 @@ export const registerSchema = Joi.object({
     'string.empty': 'Số điện thoại không được để trống',
     'string.pattern.base': 'Số điện thoại không hợp lệ',
     'any.required': 'Số điện thoại là trường bắt buộc'
+  }),
+
+  referralCode: Joi.string().optional().trim().min(6).max(10).messages({
+    'string.min': 'Mã giới thiệu phải có ít nhất 6 ký tự',
+    'string.max': 'Mã giới thiệu không được vượt quá 10 ký tự',
+    'string.base': 'Mã giới thiệu phải là chuỗi ký tự'
   })
 })
 
