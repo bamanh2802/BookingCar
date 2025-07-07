@@ -13,9 +13,17 @@
   "email": "testuser@example.com",
   "password": "Abc123!@#",
   "fullName": "Người dùng test",
-  "phone": "0912345678"
+  "phone": "0912345678",
+  "referralCode": "ABC12345"
 }
 ```
+
+**Mô tả các trường:**
+- `email`: Email đăng ký (bắt buộc)
+- `password`: Mật khẩu (bắt buộc, tối thiểu 6 ký tự)
+- `fullName`: Họ và tên (bắt buộc)
+- `phone`: Số điện thoại (bắt buộc)
+- `referralCode`: Mã giới thiệu (tùy chọn, 6-10 ký tự)
 
 **Response (201):**
 
@@ -29,9 +37,19 @@
     "fullName": "Người dùng test",
     "phone": "0912345678",
     "roleId": "6817abcdef1234567890abce",
+    "parentId": "6817abcdef1234567890abcf",
     "createdAt": "2025-05-05T12:00:00.000Z",
     "updatedAt": "2025-05-05T12:00:00.000Z"
   }
+}
+```
+
+**Response (404) - Mã giới thiệu không hợp lệ:**
+
+```json
+{
+  "statusCode": 404,
+  "message": "Mã giới thiệu không hợp lệ hoặc đã hết hạn"
 }
 ```
 
