@@ -23,8 +23,11 @@ const getTicketsCreatedBy = catchAsync(async (req, res) => {
 
   if (req.user.roleName === USER_ROLES.AGENT_LV2) {
     // Nếu là AGENT_LV2, chỉ lấy vé do chính user đó tạo
+    const getUserList = await userService.getUsersCreatedByParent(req.user._id)
+    const userIds = getUserList.results ? getUserList.results.map((user) => user._id) : []
+
     filter.createdBy = req.user._id
-    filter.userId = req.user._id
+    filter.userId = [req.user._id, ...userIds]
   } else if (req.user.roleName === USER_ROLES.AGENT_LV1) {
     // Nếu là AGENT_LV1, lấy vé do chính user đó tạo và các AGENT_LV2 do user này quản lý
     // Giả sử có hàm userService.getAgentLv2ByAgentLv1Id trả về danh sách AGENT_LV2 do AGENT_LV1 này quản lý
