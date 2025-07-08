@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { TICKET_STATUS, TRIP_TITLES } from '~/constants'
+import { TICKET_STATUS, TRIP_TITLES, USER_ROLES } from '~/constants'
 import carCompanyRepository from '~/repositories/carCompanyRepository'
 import seatMapRepository from '~/repositories/seatMapRepository'
 import ticketRepository from '~/repositories/ticketRepository'
@@ -12,23 +12,37 @@ import { commissionService } from './commissionService'
 /**
  * Lấy danh sách chuyến đi theo ngày hiện tại
  */
-const getTrips = async (reqQuery = {}, page = 1, limit = 10) => {
+const getTrips = async (reqQuery = {}, roleName, page = 1, limit = 10) => {
   const { day, ...otherFilters } = reqQuery
   let filter = { ...otherFilters }
+  const now = new Date()
+  const isClient = roleName === USER_ROLES.CLIENT
 
   if (day) {
     const { startOfDay, endOfDay } = dayRangeUTC(day)
 
-    const now = new Date()
 
     const isToday = new Date(day).toISOString().slice(0, 10) === now.toISOString().slice(0, 10)
 
-    if (isToday) {
-      filter.startTime = { $gte: toUTC(now), $lte: endOfDay }
+    if (isClient || !roleName) {
+      if (new Date(day).toISOString().slice(0, 10) < now.toISOString().slice(0, 10)) {
+        throw new ConflictError('Không thể tìm kiếm ngày trong quá khứ')
+      }
+      if (isToday) {
+        filter.startTime = { $gte: toUTC(now), $lte: endOfDay }
+      } else {
+        filter.startTime = { $gte: startOfDay, $lte: endOfDay }
+      }
     } else {
       filter.startTime = { $gte: startOfDay, $lte: endOfDay }
     }
+  } else if (isClient || !roleName) {
+    // Nếu không truyền ngày nhưng là client → chỉ lấy sau thời điểm hiện tại
+    filter.startTime = { $gte: toUTC(now) }
+
+   
   }
+
   const trips = await tripRespository.findAllTripWithPagination(filter, page, limit)
   return trips
 }

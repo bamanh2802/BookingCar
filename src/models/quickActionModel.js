@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema, Types } from 'mongoose'
 import { DOCUMENT_NAMES, QUICK_ACTION_TITLES, VALIDATION_RULES } from '~/constants'
 
 const quickActionSchema = new Schema(
@@ -14,6 +14,12 @@ const quickActionSchema = new Schema(
       enum: [QUICK_ACTION_TITLES.ASSIST_BOOK_TICKET, QUICK_ACTION_TITLES.QUICK_LOAN, QUICK_ACTION_TITLES.REPORT],
       required: true,
       index: true
+    },
+    userId: {
+      type: Types.ObjectId,
+      ref: DOCUMENT_NAMES.USER,
+      required: false,
+      default: null
     },
     isDone: { type: Boolean, default: false }
   },

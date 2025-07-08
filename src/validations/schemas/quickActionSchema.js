@@ -13,7 +13,8 @@ export const quickActionSchema = Joi.object({
     .messages({
       'any.only': 'title không hợp lệ',
       'any.required': 'title là trường bắt buộc'
-    })
+    }),
+  userId: Joi.string().optional()
 })
 
 export const quicActionUpdateSchema = Joi.object({
