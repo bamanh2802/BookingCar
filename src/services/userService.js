@@ -1,6 +1,7 @@
 import { USER_ROLES } from '~/constants'
 import userRepository from '~/repositories/userRepository'
 import userRoleRepository from '~/repositories/userRoleRepository'
+import { referralCodeRepository } from '~/repositories/referralCodeRepository'
 import { ConflictError, NotFoundError } from '~/utils/errors'
 import { pickUser } from '~/utils/formatter'
 
@@ -19,6 +20,19 @@ const register = async (userData, creatorId = null) => {
       'Phone number or email already exists!!',
       existedUser.email === userData.email ? 'email' : 'phone'
     )
+  }
+
+  // Xử lý mã giới thiệu nếu có
+  let parentId = creatorId
+  if (userData.referralCode) {
+    // Tìm mã giới thiệu hợp lệ
+    const referralCode = await referralCodeRepository.findByCode(userData.referralCode)
+    if (!referralCode) {
+      throw new NotFoundError('Mã giới thiệu không hợp lệ hoặc đã hết hạn')
+    }
+    
+    // Đặt parentId từ mã giới thiệu (ưu tiên hơn creatorId)
+    parentId = referralCode.userId
   }
 
   // Xử lý roleId
@@ -44,7 +58,7 @@ const register = async (userData, creatorId = null) => {
     fullName: userData.fullName,
     phone: userData.phone,
     roleId: userData.roleId,
-    parentId: creatorId // Người tạo tài khoản (nếu có)
+    parentId: parentId // Sử dụng parentId từ mã giới thiệu hoặc creatorId
   })
 
   // Lấy thông tin role để có roleName

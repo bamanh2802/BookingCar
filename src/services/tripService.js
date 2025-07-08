@@ -21,6 +21,7 @@ const getTrips = async (reqQuery = {}, roleName, page = 1, limit = 10) => {
   if (day) {
     const { startOfDay, endOfDay } = dayRangeUTC(day)
 
+
     const isToday = new Date(day).toISOString().slice(0, 10) === now.toISOString().slice(0, 10)
 
     if (isClient || !roleName) {
@@ -38,6 +39,8 @@ const getTrips = async (reqQuery = {}, roleName, page = 1, limit = 10) => {
   } else if (isClient || !roleName) {
     // Nếu không truyền ngày nhưng là client → chỉ lấy sau thời điểm hiện tại
     filter.startTime = { $gte: toUTC(now) }
+
+   
   }
 
   const trips = await tripRespository.findAllTripWithPagination(filter, page, limit)
