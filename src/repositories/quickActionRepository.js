@@ -5,14 +5,23 @@ class QuickActionRepository extends BaseRepository {
     super(quickActionModel)
   }
 
-  async getAllQuickAction(filter = {}, page = 1, limit = 10, sort = { createdAt: -1 }) {
+  async getAllQuickAction(filter = {}, page = 1, limit = 10, search = '', sort = { createdAt: -1 }) {
+    const matchStage = { ...filter }
+
+    // Nếu có search, áp dụng $regex vào phone (có thể mở rộng thêm field)
+    if (search) {
+      matchStage.$or = [
+        { phone: { $regex: search, $options: 'i' } },
+        { title: { $regex: search, $options: 'i' } } // bạn có thể thêm các field khác ở đây
+      ]
+    }
+
     const pipeline = [
-      { $match: filter },
+      { $match: matchStage },
       { $sort: sort },
       { $skip: (page - 1) * limit },
       { $limit: limit },
 
-      // Join với bảng users
       {
         $lookup: {
           from: 'users',
@@ -21,10 +30,7 @@ class QuickActionRepository extends BaseRepository {
           as: 'userInfo'
         }
       },
-
       { $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true } },
-
-      // (tuỳ chọn) chỉ lấy các trường cần thiết
       {
         $project: {
           title: 1,
@@ -40,8 +46,14 @@ class QuickActionRepository extends BaseRepository {
     ]
 
     const docs = await this.model.aggregate(pipeline)
-    // Tổng số lượng (nếu cần)
-    const total = await this.model.countDocuments(filter)
+
+    // Đếm tổng số lượng (áp dụng cả search nếu có)
+    const countFilter = { ...filter }
+    if (search) {
+      countFilter.$or = [{ phone: { $regex: search, $options: 'i' } }, { title: { $regex: search, $options: 'i' } }]
+    }
+
+    const total = await this.model.countDocuments(countFilter)
 
     return {
       docs,

@@ -15,15 +15,16 @@ const updateQuickAction = catchAsync(async (req, res) => {
 })
 
 const getAllQuickAction = catchAsync(async (req, res) => {
-  const { page = 1, limit = 10, ...otherFilters } = req.query
+  const { page = 1, limit = 10, search, ...otherFilters } = req.query
 
-  // Xử lý ép kiểu
+  // Ép kiểu boolean nếu cần
   const filter = { ...otherFilters }
-
   if (filter.isDone === 'true') filter.isDone = true
   else if (filter.isDone === 'false') filter.isDone = false
-  const quickActions = await quickActionService.getAllQuickAction(filter, parseInt(page), parseInt(limit))
+
+  const quickActions = await quickActionService.getAllQuickAction(filter, parseInt(page), parseInt(limit), search)
 
   return res.status(StatusCodes.OK).json(ApiResponse.success(quickActions, 'Lấy danh sách yêu cầu nhanh thành công'))
 })
+
 export const quickActionController = { createQuickAction, updateQuickAction, getAllQuickAction }

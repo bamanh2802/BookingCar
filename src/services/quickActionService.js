@@ -10,8 +10,8 @@ const updateQuickAction = async (quickActionId, reqbody) => {
   return result
 }
 
-const getAllQuickAction = async (filter, page, limit) => {
-  const results = await quickActionRepository.getAllQuickAction(filter, page, limit)
+const getAllQuickAction = async (filter, page, limit, search) => {
+  const results = await quickActionRepository.getAllQuickAction(filter, page, limit, search)
   return results
 }
 export const quickActionService = { createQuickAction, updateQuickAction, getAllQuickAction }
