@@ -40,7 +40,6 @@ class QuickActionRepository extends BaseRepository {
     ]
 
     const docs = await this.model.aggregate(pipeline)
-
     // Tổng số lượng (nếu cần)
     const total = await this.model.countDocuments(filter)
 
