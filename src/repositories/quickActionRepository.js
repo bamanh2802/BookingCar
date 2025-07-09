@@ -31,6 +31,7 @@ class QuickActionRepository extends BaseRepository {
           createdAt: 1,
           userId: 1,
           phone: 1,
+          isDone: 1,
           'userInfo._id': 1,
           'userInfo.name': 1,
           'userInfo.email': 1
