@@ -5,7 +5,7 @@ import userRepository from '~/repositories/userRepository'
 import userRoleRepository from '~/repositories/userRoleRepository'
 import ticketRepository from '~/repositories/ticketRepository'
 import { ConflictError, NotFoundError } from '~/utils/errors'
-import { getReportTimeInfo, getUtcDateRangeForMonth } from '~/utils/timeTranfer'
+import { getUtcDateRangeForMonth } from '~/utils/timeTranfer'
 
 const updateCommission = async (roldeId, updateData) => {
   const role = await userRoleRepository.findById(roldeId)
@@ -50,7 +50,7 @@ const payCommissionForTicket = async (ticket, session) => {
     throw new NotFoundError('Không tìm thấy hoa hồng cho role của người dùng')
   }
   //Tính toán số tiền hoa hồng
-  const commissionAmount = (ticket.price * commission.percent) / 100
+  const commissionAmount = (ticket.price * commission.percent * ticket.seats.length) / 100
 
   //Cập nhật số dư của người dùng
   const increaseBalance = user.amount + commissionAmount
@@ -86,7 +86,7 @@ const payCommissionForTicket = async (ticket, session) => {
       // Lấy thông tin hoa hồng theo role của người đặt hộ
       const agencyRole = await userRoleRepository.findById(agencyUser.roleId)
       if (agencyRole && agencyRole.roleName !== USER_ROLES.ADMIN) {
-        const agencyCommissionAmount = (ticket.price * 1.5) / 100
+        const agencyCommissionAmount = (ticket.price * 1.5 * ticket.seats.length) / 100
         const agencyNewBalance = (agencyUser.amount || 0) + agencyCommissionAmount
         const updatedAgencyUser = await userRepository.updateById(
           agencyUser._id,
@@ -102,7 +102,7 @@ const payCommissionForTicket = async (ticket, session) => {
           amount: agencyCommissionAmount,
           ticketId: ticket._id,
           status: REFUND_STATUS.COMPLETED,
-          reason: REASON_REFUND.AGENCY_COMMISSION // Hoa hồng cho người đặt hộ
+          reason: REASON_REFUND.AGENCY_COMMISSION
         }
         const savedAgencyCommissionHistory = await commissionPaidHistoryRepository.saveCommissionPaidHistory(
           agencyCommissionPaidHistory,
